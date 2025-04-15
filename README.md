@@ -13,8 +13,7 @@
 ## 3. Screenshot
 | Home                                                            | Expense                                                            | Cateory Management                                                    | Profile                                                            | Notifications                                                            |
 |-----------------------------------------------------------------|--------------------------------------------------------------------|-----------------------------------------------------------------------|--------------------------------------------------------------------|--------------------------------------------------------------------------|
-| <img src="assets/screenshot/home.png" width="200" height="300"> | <img src="assets/screenshot/expense.png" width="200" height="300"> | <img src="assets/screenshot/categories.png" width="200" height="300"> | <img src="assets/screenshot/profile.png" width="200" height="300"> | <img src="assets/screenshot/notifications.png" width="200" height="300"> |
-
+| [Home](assets/screenshot/home.png) | [Expense](assets/screenshot/expense.png) | [Categories](assets/screenshot/categories.png) | [Profile](assets/screenshot/profile.png) | [Notifications](assets/screenshot/notifications.png) |
 ## 4. Xử lý lỗi: 
 - Nếu source nằm trên ổ C và project nằm trên ổ D và gặp lỗi như sau:``` 
     PS D:\Workspace\flutter\MyFinance_Management\android> .\gradlew clean build
