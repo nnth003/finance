@@ -1,0 +1,2 @@
+C:/Users/hoa22/StudioProjects/MyFinance_Management/android/app/.cxx/Debug/443x63m6/x86/CMakeFiles/edit_cache.dir
+C:/Users/hoa22/StudioProjects/MyFinance_Management/android/app/.cxx/Debug/443x63m6/x86/CMakeFiles/rebuild_cache.dir

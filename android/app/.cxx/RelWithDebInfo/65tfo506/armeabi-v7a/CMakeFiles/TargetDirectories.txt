@@ -1,0 +1,2 @@
+D:/Workspace/flutter/MyFinance_Management/android/app/.cxx/RelWithDebInfo/65tfo506/armeabi-v7a/CMakeFiles/edit_cache.dir
+D:/Workspace/flutter/MyFinance_Management/android/app/.cxx/RelWithDebInfo/65tfo506/armeabi-v7a/CMakeFiles/rebuild_cache.dir
