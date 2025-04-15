@@ -16,9 +16,8 @@
 | <img src="assets/screenshot/home.png" width="200" height="300"> | <img src="assets/screenshot/expense.png" width="200" height="300"> | <img src="assets/screenshot/categories.png" width="200" height="300"> | <img src="assets/screenshot/profile.png" width="200" height="300"> | <img src="assets/screenshot/notifications.png" width="200" height="300"> |
 
 ## 4. Xử lý lỗi: 
-- Nếu source nằm trên ổ C và project nằm trên ổ D và gặp lỗi như sau:
-  - ```
-  >PS D:\Workspace\flutter\MyFinance_Management\android> .\gradlew clean build
+- Nếu source nằm trên ổ C và project nằm trên ổ D và gặp lỗi như sau:``` 
+    PS D:\Workspace\flutter\MyFinance_Management\android> .\gradlew clean build
     Configure project :gradle
     WARNING: Unsupported Kotlin plugin version.
     The `embedded-kotlin` and `kotlin-dsl` plugins rely on features of Kotlin `1.9.10` that might work differently than in the requested version `1.9.20`.
@@ -41,8 +40,7 @@
         >   Get more help at https://help.gradle.org.
         BUILD FAILED in 3s
         6 actionable tasks: 1 executed, 5 up-to-date
-        PS D:\Workspace\flutter\MyFinance_Management\android>
-    ```
+        PS D:\Workspace\flutter\MyFinance_Management\android>```
 - Xử lý lỗi:
   - Tạo một thư mục mới trong ổ D: ```D:\FlutterPubCache```
   - Thêm biến môi trường: 
