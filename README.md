@@ -49,3 +49,51 @@
     - Ở mục **User variables**, nhấn **New...** 
     - Variable name: ```PUB_CACHE``` 
     - Variable value: ```D:\FlutterPubCache```
+   
+  Thêm Database  vào
+  chọn androi/app/google-services.json
+  {
+  "project_info": {
+    "project_number": "348738583132",
+    "project_id": "finance-400a3",
+    "storage_bucket": "finance-400a3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:348738583132:android:485c43ed4d774f04624499",
+        "android_client_info": {
+          "package_name": "com.example.finance"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCkqKeP8Kjb2B2wimSTtVOE7dSRT_kSAak"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+
+}
+
+tiếp tục vào file main
+await Firebase.initializeApp(
+      options: const FirebaseOptions(
+         apiKey: "AIzaSyAVJqTSPQqVZNQBc4ltmv-W_kdgcWJzwsE",
+  authDomain: "finance-400a3.firebaseapp.com",
+  projectId: "finance-400a3",
+  storageBucket: "finance-400a3.firebasestorage.app",
+  messagingSenderId: "348738583132",
+  appId: "1:348738583132:web:1fd0d46063844ec5624499",)
+    );
+
+
+
+  
