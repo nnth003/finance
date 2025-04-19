@@ -38,7 +38,7 @@ class _LoginPageState extends State<LoginPage> {
         );
         if (!mounted) return;
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => MainPage()),
+          MaterialPageRoute(builder: (_) => const MainPage()),
         );
       } on FirebaseAuthException catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -61,7 +61,7 @@ class _LoginPageState extends State<LoginPage> {
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: Colors.white
         ),
         child: SafeArea(
@@ -164,7 +164,7 @@ class _LoginPageState extends State<LoginPage> {
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
-        contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       ),
       validator: validator,
     );
@@ -176,7 +176,7 @@ class _LoginPageState extends State<LoginPage> {
       child: TextButton(
         onPressed: () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => ForgotPassword()),
+          MaterialPageRoute(builder: (_) => const ForgotPassword()),
         ),
         child: Text(
           "Forgot Password?",
@@ -192,7 +192,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _buildLoginButton(Size media, TextStyle textStyle) {
     return _isLoading
-        ? CircularProgressIndicator(color: Colors.blueAccent)
+        ? const CircularProgressIndicator(color: Colors.blueAccent)
         : ElevatedButton(
             style: ElevatedButton.styleFrom(
               padding: EdgeInsets.zero,

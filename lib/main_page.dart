@@ -1,7 +1,9 @@
 import 'package:finance/Analytics/analytics.dart';
+import 'package:finance/ChatAI/chat_screen.dart';
 import 'package:finance/Home/home_page.dart';
 import 'package:finance/accounts/account_page.dart';
 import 'package:finance/category/category_page.dart';
+import 'package:finance/plan/plan_page.dart';
 import 'package:finance/provider/transactionProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
@@ -26,8 +28,13 @@ class _MainPageState extends State<MainPage> {
   final List<Widget> _pages = [
     DashboardScreen(), // Replace with your actual implementation
     AnalyticsPage(),
-    CategoryManagementPage(), // Replace with your actual implementation
-    AccountPage(), // Replace with your actual implementation
+    const CategoryManagementPage(),
+        ChatScreen(),
+
+    SpendingPlanScreen(), // Replace with your actual implementation
+     // Replace with your actual implementation
+        AccountPage(), 
+// Replace with your actual implementation
   ];
 
   @override
@@ -67,7 +74,11 @@ class _MainPageState extends State<MainPage> {
                   GButton(icon: Icons.home, text: 'Home'),
                   GButton(icon: Icons.analytics, text: 'Analytics'),
                   GButton(icon: Icons.category, text: 'Categories'),
+                  GButton(icon: Icons.airplane_ticket_sharp, text: 'Chat Ai'),
+                 GButton(icon: Icons.place_rounded, text: 'Plan'),
+
                   GButton(icon: Icons.person, text: 'Accounts'),
+
                 ],
               ),
             ),

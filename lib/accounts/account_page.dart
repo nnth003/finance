@@ -7,6 +7,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../auth/login.dart';
 
 class AccountPage extends StatelessWidget {
+  const AccountPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
@@ -39,6 +41,8 @@ class AccountPage extends StatelessWidget {
 }
 
 class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({super.key});
+
   Future<Map<String, String>> _getUserInfo() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -94,7 +98,7 @@ class ProfileScreen extends StatelessWidget {
                       await FirebaseAuth.instance.signOut();
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => LoginPage()),
+                        MaterialPageRoute(builder: (context) => const LoginPage()),
                       );
                     },
                   ),
@@ -291,7 +295,7 @@ class EditProfileScreen extends StatefulWidget {
   final String currentEmail;
   final String currentPhone;
 
-  const EditProfileScreen({
+  const EditProfileScreen({super.key, 
     required this.currentName,
     required this.currentEmail,
     required this.currentPhone,

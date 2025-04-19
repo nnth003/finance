@@ -8,7 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 // Onboarding Screen
 class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({Key? key}) : super(key: key);
+  const OnboardingScreen({super.key});
 
   @override
   _OnboardingScreenState createState() => _OnboardingScreenState();
@@ -161,7 +161,7 @@ class OnboardingData {
 // Single Onboarding Page Widget
 class OnboardingPage extends StatelessWidget {
   final OnboardingData data;
-  const OnboardingPage({Key? key, required this.data}) : super(key: key);
+  const OnboardingPage({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
@@ -203,7 +203,7 @@ class OnboardingPage extends StatelessWidget {
 
 // Authentication Wrapper
 class AuthWrapper extends StatelessWidget {
-  const AuthWrapper({Key? key}) : super(key: key);
+  const AuthWrapper({super.key});
 
   @override
   Widget build(BuildContext context) {

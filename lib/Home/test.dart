@@ -7,6 +7,8 @@ import '../provider/transactionProvider.dart';
 import 'notification_page.dart'; // Ensure this file exists
 
 class DashboardScreen extends StatefulWidget {
+  const DashboardScreen({super.key});
+
   @override
   _DashboardScreenState createState() => _DashboardScreenState();
 }
@@ -161,7 +163,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       children: [
                         const Icon(
                           Icons.notifications, // Normal notification icon
-                          color: const Color.fromARGB(255, 73, 176, 205),
+                          color: Color.fromARGB(255, 73, 176, 205),
                           size: 37,
                         ),
                         Positioned(
@@ -182,7 +184,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => NotificationsPage()),
+                            builder: (context) => const NotificationsPage()),
                       );
                     },
                   ),
@@ -197,7 +199,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
-                                LoginPage()), // Replace with your SignInPage widget
+                                const LoginPage()), // Replace with your SignInPage widget
                       );
                     },
                   ),
@@ -315,11 +317,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(15),
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
               color: Colors.black12,
               blurRadius: 6,
-              offset: const Offset(2, 2),
+              offset: Offset(2, 2),
             ),
           ],
         ),
@@ -365,11 +367,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: Colors.black12,
             blurRadius: 6,
-            offset: const Offset(2, 2),
+            offset: Offset(2, 2),
           ),
         ],
       ),

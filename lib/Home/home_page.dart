@@ -6,6 +6,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../auth/login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 class DashboardScreen extends StatefulWidget {
+  const DashboardScreen({super.key});
+
   @override
   DashboardScreenState createState() => DashboardScreenState();
 }
@@ -159,7 +161,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                       children: [
                         const Icon(
                           Icons.notifications, // Normal notification icon
-                          color: const Color.fromARGB(255, 73, 176, 205),
+                          color: Color.fromARGB(255, 73, 176, 205),
                           size: 37,
                         ),
                         Positioned(
@@ -180,7 +182,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => NotificationsPage()),
+                            builder: (context) => const NotificationsPage()),
                       );
                     },
                   ),
@@ -195,7 +197,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
-                                LoginPage()), // Replace with your SignInPage widget
+                                const LoginPage()), // Replace with your SignInPage widget
                       );
                     },
                   ),
@@ -313,11 +315,11 @@ class DashboardScreenState extends State<DashboardScreen> {
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(15),
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
               color: Colors.black12,
               blurRadius: 6,
-              offset: const Offset(2, 2),
+              offset: Offset(2, 2),
             ),
           ],
         ),
@@ -363,11 +365,11 @@ class DashboardScreenState extends State<DashboardScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: Colors.black12,
             blurRadius: 6,
-            offset: const Offset(2, 2),
+            offset: Offset(2, 2),
           ),
         ],
       ),

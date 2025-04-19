@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import '../lib/Home/home_page.dart'; // Adjust the import path to your DashboardScreen file
+import 'package:finance/Home/home_page.dart'; // Adjust the import path to your DashboardScreen file
 
 // Create a testable subclass of DashboardScreen to access its state
 class TestableDashboardScreen extends DashboardScreen {
+  TestableDashboardScreen({super.key});
+
   DashboardScreenState getState() {
     return DashboardScreenState();
   }
@@ -16,7 +18,7 @@ void main() {
       final transactions = [
         {'amount': 100.0}, // Income
         {'amount': -50.0}, // Expense
-        {'amount': 200.0}, // Income
+        {'amount': 200.0}, // Incomezz
         {'amount': -25.0}, // Expense
       ];
 

@@ -99,7 +99,7 @@ class _CategoryManagementPageState extends State<CategoryManagementPage> {
                     ),
                   ),
                 ),
-                SizedBox(height: 20,),
+                const SizedBox(height: 20,),
                  Expanded(
                   child: provider.categories.isEmpty
                       ? const Center(

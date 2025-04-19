@@ -1,27 +1,27 @@
-import 'package:finance/main_page.dart';
 import 'package:finance/provider/category_provider.dart';
 import 'package:finance/provider/transactionProvider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'onboarding_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(); // <- load biến môi trường .env
 
   // Check if the app is running on the web and initialize Firebase accordingly
   if (kIsWeb) {
     await Firebase.initializeApp(
       options: const FirebaseOptions(
-          apiKey: "AIzaSyDVpS3Xfyc4J-c9zjjGzxs5AjNpXdQdvPs",
-          authDomain: "finance-tracker-b17af.firebaseapp.com",
-          projectId: "finance-tracker-b17af",
-          storageBucket: "finance-tracker-b17af.firebasestorage.app",
-          messagingSenderId: "480580024190",
-          appId: "1:480580024190:web:a72db8416f9b6c2643652f"),
+         apiKey: "AIzaSyAVJqTSPQqVZNQBc4ltmv-W_kdgcWJzwsE",
+  authDomain: "finance-400a3.firebaseapp.com",
+  projectId: "finance-400a3",
+  storageBucket: "finance-400a3.firebasestorage.app",
+  messagingSenderId: "348738583132",
+  appId: "1:348738583132:web:1fd0d46063844ec5624499",)
     );
   } else {
     await Firebase.initializeApp();

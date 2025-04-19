@@ -97,7 +97,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
           BoxShadow(
             color: Colors.grey.withOpacity(0.2),
             blurRadius: 8,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -106,12 +106,12 @@ class _ForgotPasswordState extends State<ForgotPassword> {
         keyboardType: TextInputType.emailAddress,
         decoration: InputDecoration(
           hintText: "Enter your email",
-          prefixIcon: Icon(Icons.email_outlined, color: Colors.blueAccent),
+          prefixIcon: const Icon(Icons.email_outlined, color: Colors.blueAccent),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
           ),
-          contentPadding: EdgeInsets.symmetric(vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(vertical: 16),
         ),
       ),
     );
@@ -119,7 +119,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
 
   Widget _buildResetButton(Size media) {
     return _isLoading
-        ? CircularProgressIndicator(color: Colors.blueAccent)
+        ? const CircularProgressIndicator(color: Colors.blueAccent)
         : ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blueAccent,

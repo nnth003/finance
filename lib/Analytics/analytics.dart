@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../provider/transactionProvider.dart';
 
 class AnalyticsPage extends StatefulWidget {
+  const AnalyticsPage({super.key});
+
   @override
   _AnalyticsPageState createState() => _AnalyticsPageState();
 }
@@ -14,9 +16,18 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   DateTime? _customEndDate;
 
   Map<String, double> _computeCategorySpending(
+  //   //{
+  // "title": "Ăn uống",
+  // "amount": 100.0,
+  // "type": "Expense",
+  // "category": "Food",
+  // "date": DateTime(2025, 4, 10)
       List<Map<String, dynamic>> transactions) {
+        // thời gian hiện tại
     final now = DateTime.now();
+    // ngày bắt đầu lọc giao dịch
     DateTime startDate;
+    // ngày kết thúc lọc giao dịch
     DateTime endDate = now;
 
     switch (_selectedFilter) {
@@ -43,7 +54,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         endDate = now;
     }
 
-    final filteredTransactions = transactions.where((t) {
+    final filteredTransactions = transactions.where((t ) {
       final date = DateTime.parse(t['date']);
       final inRange = date.isAfter(startDate) &&
           date.isBefore(endDate.add(const Duration(days: 1)));
@@ -111,10 +122,12 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   @override
   Widget build(BuildContext context) {
+  
     return Consumer<TransactionProvider>(
       builder: (context, provider, child) {
         return StreamBuilder<List<Map<String, dynamic>>>(
-          stream: provider.transactionsStream,
+          // lấy dữ liệu từ data base
+          stream: provider.transactionsStream, 
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return const Center(child: CircularProgressIndicator());
@@ -122,7 +135,12 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             if (snapshot.hasError) {
               return const Center(child: Text('Error loading transactions'));
             }
+            // lấy danh sách giao dịch 
             final transactions = snapshot.data!;
+
+            // dùng để tính tổng giá trị từng category dùng để vẽ biểu đồ
+            // và lọc danh sách giao dịch theo filter đã chọn như oincome, expense, all
+            // và các khoảng thời gian như week, month, year, custom
             final categorySpending = _computeCategorySpending(transactions);
             final filteredTransactions = _filterTransactions(transactions);
 
@@ -273,6 +291,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                         _buildFilterButton('Income'),
                         const SizedBox(width: 12),
                         _buildFilterButton('Expense'),
+                           const SizedBox(width: 12),
+                        _buildFilterButton('PDF'),
                       ],
                     ),
                     const SizedBox(height: 10),
