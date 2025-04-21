@@ -11,69 +11,17 @@
   ```
 
 ## 3. Screenshot
+| Home                                         | Expense                                   | Category Management                        | Profile                                  |
+|----------------------------------------------|-------------------------------------------|--------------------------------------------|------------------------------------------|
+| ![Home](assets/screenshot/hom.png)           | ![Expense](assets/screenshot/expens.png)  | ![Categories](assets/screenshot/categories.png) | ![Profile](assets/screenshot/profil.png) |
 
-[//]: # (| Home                                         | Expense                                   | Category Management                        | Profile                                  | Notifications                                   | Signup                                   | Signin                                   | Login                                    | Add Transaction                              | Add Category                               | AI Chat                                   | Plan                                    |)
+| Notifications                                | Signup                                    | Signin                                    | Login                                    |
+|----------------------------------------------|-------------------------------------------|-------------------------------------------|------------------------------------------|
+| ![Notifications](assets/screenshot/notifications.png) | ![Signup](assets/screenshot/signup.png)   | ![Signin](assets/screenshot/signin.png)    | ![Login](assets/screenshot/login.png)     |
 
-[//]: # (|----------------------------------------------|-------------------------------------------|--------------------------------------------|------------------------------------------|-------------------------------------------------|------------------------------------------|------------------------------------------|------------------------------------------|--------------------------------------------|-------------------------------------------|-------------------------------------------|-----------------------------------------|)
-
-[//]: # (| ![Home]&#40;assets/screenshot/hom.png&#41;           | ![Expense]&#40;assets/screenshot/expens.png&#41;  | ![Categories]&#40;assets/screenshot/categories.png&#41; | ![Profile]&#40;assets/screenshot/profil.png&#41; | ![Notifications]&#40;assets/screenshot/notifications.png&#41; | ![Signup]&#40;assets/screenshot/signup.png&#41;  | ![Signin]&#40;assets/screenshot/signin.png&#41;  | ![Login]&#40;assets/screenshot/login.png&#41;     | ![Add Transaction]&#40;assets/screenshot/addtransaction.png&#41; | ![Add Category]&#40;assets/screenshot/addcategory.png&#41; | ![AI Chat]&#40;assets/screenshot/aichat.png&#41;  | ![Plan]&#40;assets/screenshot/plan.png&#41;      |)
-
-<div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
-  <div style="width: 22%; margin-bottom: 10px;">
-    <img src="assets/screenshot/hom.png" alt="Home" style="width: 100%; height: auto;" />
-    <p>Home</p>
-  </div>
-  <div style="width: 22%; margin-bottom: 10px;">
-    <img src="assets/screenshot/expens.png" alt="Expense" style="width: 100%; height: auto;" />
-    <p>Expense</p>
-  </div>
-  <div style="width: 22%; margin-bottom: 10px;">
-    <img src="assets/screenshot/categories.png" alt="Category Management" style="width: 100%; height: auto;" />
-    <p>Category Management</p>
-  </div>
-  <div style="width: 22%; margin-bottom: 10px;">
-    <img src="assets/screenshot/profil.png" alt="Profile" style="width: 100%; height: auto;" />
-    <p>Profile</p>
-  </div>
-</div>
-
-<div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
-  <div style="width: 22%; margin-bottom: 10px;">
-    <img src="assets/screenshot/notifications.png" alt="Notifications" style="width: 100%; height: auto;" />
-    <p>Notifications</p>
-  </div>
-  <div style="width: 22%; margin-bottom: 10px;">
-    <img src="assets/screenshot/signup.png" alt="Signup" style="width: 100%; height: auto;" />
-    <p>Signup</p>
-  </div>
-  <div style="width: 22%; margin-bottom: 10px;">
-    <img src="assets/screenshot/signin.png" alt="Signin" style="width: 100%; height: auto;" />
-    <p>Signin</p>
-  </div>
-  <div style="width: 22%; margin-bottom: 10px;">
-    <img src="assets/screenshot/login.png" alt="Login" style="width: 100%; height: auto;" />
-    <p>Login</p>
-  </div>
-</div>
-
-<div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
-  <div style="width: 22%; margin-bottom: 10px;">
-    <img src="assets/screenshot/addtransaction.png" alt="Add Transaction" style="width: 100%; height: auto;" />
-    <p>Add Transaction</p>
-  </div>
-  <div style="width: 22%; margin-bottom: 10px;">
-    <img src="assets/screenshot/addcategory.png" alt="Add Category" style="width: 100%; height: auto;" />
-    <p>Add Category</p>
-  </div>
-  <div style="width: 22%; margin-bottom: 10px;">
-    <img src="assets/screenshot/aichat.png" alt="AI Chat" style="width: 100%; height: auto;" />
-    <p>AI Chat</p>
-  </div>
-  <div style="width: 22%; margin-bottom: 10px;">
-    <img src="assets/screenshot/plan.png" alt="Plan" style="width: 100%; height: auto;" />
-    <p>Plan</p>
-  </div>
-</div
+| Add Transaction                              | Add Category                               | AI Chat                                    | Plan                                     |
+|----------------------------------------------|-------------------------------------------|-------------------------------------------|------------------------------------------|
+| ![Add Transaction](assets/screenshot/addtransaction.png) | ![Add Category](assets/screenshot/addcategory.png) | ![AI Chat](assets/screenshot/aichat.png)  | ![Plan](assets/screenshot/plan.png)      |
 
 ## 4. Xử lý lỗi: 
 - Nếu source nằm trên ổ C và project nằm trên ổ D và gặp lỗi như sau:``` 
