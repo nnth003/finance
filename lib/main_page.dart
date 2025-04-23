@@ -18,7 +18,7 @@ class MainPage extends StatefulWidget {
  
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
-  bool isPremiumUnlocked = true; // Giả lập trạng thái đã thanh toán
+  bool isPremiumUnlocked = false; // Giả lập trạng thái đã thanh toán
 
   void _onItemTapped(int index) {
     setState(() {
