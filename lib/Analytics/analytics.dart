@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
 import '../provider/transactionProvider.dart';
+import 'package:intl/intl.dart';
 
 class AnalyticsPage extends StatefulWidget {
   const AnalyticsPage({super.key});
@@ -10,20 +11,27 @@ class AnalyticsPage extends StatefulWidget {
   _AnalyticsPageState createState() => _AnalyticsPageState();
 }
 
+final currencyFormat = NumberFormat.currency(
+  locale: 'vi_VN',
+  symbol: '₫',
+  decimalDigits: 0,
+);
+
 class _AnalyticsPageState extends State<AnalyticsPage> {
   String _selectedFilter = 'All';
   DateTime? _customStartDate;
   DateTime? _customEndDate;
 
   Map<String, double> _computeCategorySpending(
-  //   //{
-  // "title": "Ăn uống",
-  // "amount": 100.0,
-  // "type": "Expense",
-  // "category": "Food",
-  // "date": DateTime(2025, 4, 10)
-      List<Map<String, dynamic>> transactions) {
-        // thời gian hiện tại
+    //   //{
+    // "title": "Ăn uống",
+    // "amount": 100.0,
+    // "type": "Expense",
+    // "category": "Food",
+    // "date": DateTime(2025, 4, 10)
+    List<Map<String, dynamic>> transactions,
+  ) {
+    // thời gian hiện tại
     final now = DateTime.now();
     // ngày bắt đầu lọc giao dịch
     DateTime startDate;
@@ -54,18 +62,20 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         endDate = now;
     }
 
-    final filteredTransactions = transactions.where((t ) {
-      final date = DateTime.parse(t['date']);
-      final inRange = date.isAfter(startDate) &&
-          date.isBefore(endDate.add(const Duration(days: 1)));
-      return _selectedFilter == 'All' ||
-              _selectedFilter == 'Week' ||
-              _selectedFilter == 'Month' ||
-              _selectedFilter == 'Year' ||
-              _selectedFilter == 'Custom'
-          ? inRange
-          : inRange && t['type'] == _selectedFilter;
-    }).toList();
+    final filteredTransactions =
+        transactions.where((t) {
+          final date = DateTime.parse(t['date']);
+          final inRange =
+              date.isAfter(startDate) &&
+              date.isBefore(endDate.add(const Duration(days: 1)));
+          return _selectedFilter == 'All' ||
+                  _selectedFilter == 'Week' ||
+                  _selectedFilter == 'Month' ||
+                  _selectedFilter == 'Year' ||
+                  _selectedFilter == 'Custom'
+              ? inRange
+              : inRange && t['type'] == _selectedFilter;
+        }).toList();
 
     final Map<String, double> spending = {};
     for (var t in filteredTransactions) {
@@ -77,7 +87,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
   List<Map<String, dynamic>> _filterTransactions(
-      List<Map<String, dynamic>> transactions) {
+    List<Map<String, dynamic>> transactions,
+  ) {
     final now = DateTime.now();
     DateTime startDate;
     DateTime endDate = now;
@@ -108,7 +119,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
     return transactions.where((t) {
       final date = DateTime.parse(t['date']);
-      final inRange = date.isAfter(startDate) &&
+      final inRange =
+          date.isAfter(startDate) &&
           date.isBefore(endDate.add(const Duration(days: 1)));
       return _selectedFilter == 'All' ||
               _selectedFilter == 'Week' ||
@@ -122,12 +134,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   @override
   Widget build(BuildContext context) {
-  
     return Consumer<TransactionProvider>(
       builder: (context, provider, child) {
         return StreamBuilder<List<Map<String, dynamic>>>(
           // lấy dữ liệu từ data base
-          stream: provider.transactionsStream, 
+          stream: provider.transactionsStream,
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return const Center(child: CircularProgressIndicator());
@@ -135,7 +146,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             if (snapshot.hasError) {
               return const Center(child: Text('Error loading transactions'));
             }
-            // lấy danh sách giao dịch 
+            // lấy danh sách giao dịch
             final transactions = snapshot.data!;
 
             // dùng để tính tổng giá trị từng category dùng để vẽ biểu đồ
@@ -143,7 +154,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             // và các khoảng thời gian như week, month, year, custom
             final categorySpending = _computeCategorySpending(transactions);
             final filteredTransactions = _filterTransactions(transactions);
-
+            final maxSpending = categorySpending.values.reduce(
+              (a, b) => a > b ? a : b,
+            );
+            final maxY =
+                maxSpending * 1.2; // Thêm 20% dư ra để hiển thị tốt hơn
             return Scaffold(
               appBar: AppBar(
                 title: const Text('Expense'),
@@ -162,20 +177,23 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                         _buildFilterButton('Month'),
                         _buildFilterButton('Year'),
                         IconButton(
-                          icon: const Icon(Icons.calendar_today,
-                              color: Colors.grey),
+                          icon: const Icon(
+                            Icons.calendar_today,
+                            color: Colors.grey,
+                          ),
                           onPressed: () async {
                             final range = await showDateRangePicker(
                               context: context,
                               firstDate: DateTime(2000),
                               lastDate: DateTime(2100),
-                              initialDateRange: _customStartDate != null &&
-                                      _customEndDate != null
-                                  ? DateTimeRange(
-                                      start: _customStartDate!,
-                                      end: _customEndDate!,
-                                    )
-                                  : null,
+                              initialDateRange:
+                                  _customStartDate != null &&
+                                          _customEndDate != null
+                                      ? DateTimeRange(
+                                        start: _customStartDate!,
+                                        end: _customEndDate!,
+                                      )
+                                      : null,
                             );
                             if (range != null) {
                               setState(() {
@@ -189,40 +207,44 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                       ],
                     ),
                     const SizedBox(height: 20),
+
                     SizedBox(
                       height: 200,
                       child: BarChart(
                         BarChartData(
+                          maxY: maxY, // Giới hạn maxY của biểu đồ
                           alignment: BarChartAlignment.spaceAround,
-                          barGroups: categorySpending.entries.map((e) {
-                            final index =
-                                categorySpending.keys.toList().indexOf(e.key);
-                            return BarChartGroupData(
-                              x: index,
-                              barRods: [
-                                BarChartRodData(
-                                  toY: e.value,
-                                  color: _getColorForType('Income'),
-                                  width: 20,
-                                  borderRadius: const BorderRadius.vertical(
-                                      top: Radius.circular(4)),
-                                ),
-                              ],
-                              showingTooltipIndicators: [0],
-                            );
-                          }).toList(),
+                          barGroups:
+                              categorySpending.entries.map((e) {
+                                final index = categorySpending.keys
+                                    .toList()
+                                    .indexOf(e.key);
+                                return BarChartGroupData(
+                                  x: index,
+                                  barRods: [
+                                    BarChartRodData(
+                                      toY: e.value,
+                                      color: _getColorForType('Income'),
+                                      width: 20,
+                                      borderRadius: const BorderRadius.vertical(
+                                        top: Radius.circular(4),
+                                      ),
+                                    ),
+                                  ],
+                                  showingTooltipIndicators: [0],
+                                );
+                              }).toList(),
                           titlesData: FlTitlesData(
                             bottomTitles: AxisTitles(
                               sideTitles: SideTitles(
+
                                 showTitles: true,
                                 reservedSize: 30,
                                 getTitlesWidget: (value, meta) {
                                   final category = categorySpending.keys
                                       .elementAt(value.toInt());
                                   return SideTitleWidget(
-                                    // axisSide: meta.axisSide,
                                     space: 8.0,
-
                                     meta: meta,
                                     child: Text(
                                       category,
@@ -238,33 +260,42 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                             ),
                             leftTitles: AxisTitles(
                               sideTitles: SideTitles(
-                                showTitles: true,
+                                showTitles: false,
                                 reservedSize: 40,
-                                getTitlesWidget: (value, meta) => Text(
-                                  '\$${value.toInt()}',
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 12,
-                                  ),
-                                ),
+                                getTitlesWidget:
+                                    (value, meta) => Text(
+                                      currencyFormat.format(value),
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 12,
+                                      ),
+                                    ),
                               ),
                             ),
                             topTitles: const AxisTitles(
-                                sideTitles: SideTitles(showTitles: false)),
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
                             rightTitles: const AxisTitles(
-                                sideTitles: SideTitles(showTitles: false)),
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
                           ),
                           borderData: FlBorderData(show: false),
                           gridData: const FlGridData(show: false),
                           barTouchData: BarTouchData(
                             enabled: true,
                             touchTooltipData: BarTouchTooltipData(
-                              getTooltipItem:
-                                  (group, groupIndex, rod, rodIndex) {
+                              getTooltipItem: (
+                                group,
+                                groupIndex,
+                                rod,
+                                rodIndex,
+                              ) {
                                 final category = categorySpending.keys
                                     .elementAt(group.x.toInt());
                                 return BarTooltipItem(
-                                  '\$${rod.toY.toStringAsFixed(2)}',
+                                  currencyFormat.format(
+                                    rod.toY,
+                                  ), // Hiển thị dạng 1.000.000₫
                                   const TextStyle(color: Colors.white),
                                 );
                               },
@@ -273,6 +304,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                         ),
                       ),
                     ),
+
                     const SizedBox(height: 20),
                     const Text(
                       'Detail Transactions',
@@ -291,7 +323,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                         _buildFilterButton('Income'),
                         const SizedBox(width: 12),
                         _buildFilterButton('Expense'),
-                           const SizedBox(width: 12),
+                        const SizedBox(width: 12),
                         _buildFilterButton('PDF'),
                       ],
                     ),
@@ -303,16 +335,21 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                           final t = filteredTransactions[index];
                           return _buildTransactionCard(
                             icon: _getIconForCategory(t['category']),
-                            iconColor: t['type'] == 'Income'
-                                ? Colors.green
-                                : Colors.red,
+                            iconColor:
+                                t['type'] == 'Income'
+                                    ? Colors.green
+                                    : Colors.red,
                             title: t['title'],
-                            description: t['description'] ??
+                            description:
+                                t['description'] ??
                                 '${t['type']} - ${t['category'] ?? 'Uncategorized'}',
                             amount: t['amount'],
                             date: t['date'],
-                            onEdit: () => provider
-                                .showTransactionDialog(context, id: t['id']),
+                            onEdit:
+                                () => provider.showTransactionDialog(
+                                  context,
+                                  id: t['id'],
+                                ),
                             onDelete: () => provider.deleteTransaction(t['id']),
                           );
                         },
@@ -326,6 +363,14 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         );
       },
     );
+  }
+
+  Color _getColorForType(String type) {
+    if (type == 'Income') {
+      return Colors.green;
+    } else {
+      return const Color.fromARGB(255, 255, 0, 0);
+    }
   }
 
   Widget _buildFilterButton(String filter) {
@@ -356,7 +401,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     }
   }
 
-  Color _getColorForType(String? type) {
+  Color _getColorForTypes(String? type) {
     switch (type ?? 'Uncategorized') {
       case 'Income':
         return Colors.green;
@@ -377,8 +422,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     required VoidCallback onEdit,
     required VoidCallback onDelete,
   }) {
-    final Color amountColor =
-        _getColorForType(amount >= 0 ? 'Income' : 'Expense');
+    final Color amountColor = _getColorForType(
+      amount >= 0 ? 'Income' : 'Expense',
+    );
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
@@ -404,7 +450,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               ),
             ),
             Text(
-              '\$${amount.abs().toStringAsFixed(2)}',
+              NumberFormat.currency(
+                locale: 'vi_VN',
+                symbol: '₫',
+              ).format(amount),
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
@@ -432,17 +481,23 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             if (value == 'edit') onEdit();
             if (value == 'delete') onDelete();
           },
-          itemBuilder: (context) => [
-            const PopupMenuItem(
-              value: 'edit',
-              child: ListTile(leading: Icon(Icons.edit), title: Text('Edit')),
-            ),
-            const PopupMenuItem(
-              value: 'delete',
-              child:
-                  ListTile(leading: Icon(Icons.delete), title: Text('Delete')),
-            ),
-          ],
+          itemBuilder:
+              (context) => [
+                const PopupMenuItem(
+                  value: 'edit',
+                  child: ListTile(
+                    leading: Icon(Icons.edit),
+                    title: Text('Edit'),
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'delete',
+                  child: ListTile(
+                    leading: Icon(Icons.delete),
+                    title: Text('Delete'),
+                  ),
+                ),
+              ],
           icon: const Icon(Icons.more_vert),
         ),
       ),
@@ -485,8 +540,10 @@ class TransactionManagementPageState extends State<TransactionManagementPage> {
                 backgroundColor: Colors.white,
                 elevation: 0,
                 leading: IconButton(
-                  icon:
-                      const Icon(Icons.arrow_back_ios_new, color: Colors.blue),
+                  icon: const Icon(
+                    Icons.arrow_back_ios_new,
+                    color: Colors.blue,
+                  ),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ),
@@ -505,47 +562,57 @@ class TransactionManagementPageState extends State<TransactionManagementPage> {
                     ),
                     const SizedBox(height: 20),
                     Expanded(
-                      child: transactions.isEmpty
-                          ? const Center(
-                              child: Text(
-                                'No transactions yet. Add one to get started!',
-                                style:
-                                    TextStyle(fontSize: 16, color: Colors.grey),
+                      child:
+                          transactions.isEmpty
+                              ? const Center(
+                                child: Text(
+                                  'No transactions yet. Add one to get started!',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              )
+                              : ListView.builder(
+                                itemCount: transactions.length,
+                                itemBuilder: (context, index) {
+                                  final t = transactions[index];
+                                  return _buildTransactionCard(
+                                    icon: _getIconForCategory(t['category']),
+                                    iconColor: _getColorForType(t['type']),
+                                    title: t['title'],
+                                    description:
+                                        t['description'] ??
+                                        '${t['type']} - ${t['category'] ?? 'Uncategorized'}',
+                                    amount: t['amount'],
+                                    date: t['date'],
+                                    onEdit:
+                                        () => provider.showTransactionDialog(
+                                          context,
+                                          id: t['id'],
+                                        ),
+                                    onDelete:
+                                        () =>
+                                            provider.deleteTransaction(t['id']),
+                                  );
+                                },
                               ),
-                            )
-                          : ListView.builder(
-                              itemCount: transactions.length,
-                              itemBuilder: (context, index) {
-                                final t = transactions[index];
-                                return _buildTransactionCard(
-                                  icon: _getIconForCategory(t['category']),
-                                  iconColor: _getColorForType(t['type']),
-                                  title: t['title'],
-                                  description: t['description'] ??
-                                      '${t['type']} - ${t['category'] ?? 'Uncategorized'}',
-                                  amount: t['amount'],
-                                  date: t['date'],
-                                  onEdit: () => provider.showTransactionDialog(
-                                      context,
-                                      id: t['id']),
-                                  onDelete: () =>
-                                      provider.deleteTransaction(t['id']),
-                                );
-                              },
-                            ),
                     ),
                     const SizedBox(height: 20),
                     Center(
                       child: ElevatedButton(
-                        onPressed: () =>
-                            provider.showTransactionDialog(context),
+                        onPressed:
+                            () => provider.showTransactionDialog(context),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 30, vertical: 15),
+                            horizontal: 30,
+                            vertical: 15,
+                          ),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                         child: const Text(
                           'Add New Transaction',
@@ -597,8 +664,9 @@ class TransactionManagementPageState extends State<TransactionManagementPage> {
     required VoidCallback onEdit,
     required VoidCallback onDelete,
   }) {
-    final Color amountColor =
-        _getColorForType(amount >= 0 ? 'Income' : 'Expense');
+    final Color amountColor = _getColorForType(
+      amount >= 0 ? 'Income' : 'Expense',
+    );
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
@@ -637,7 +705,10 @@ class TransactionManagementPageState extends State<TransactionManagementPage> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '\$${amount.abs().toStringAsFixed(2)}',
+                  NumberFormat.currency(
+                    locale: 'vi_VN',
+                    symbol: '₫',
+                  ).format(amount),
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -658,17 +729,23 @@ class TransactionManagementPageState extends State<TransactionManagementPage> {
             if (value == 'edit') onEdit();
             if (value == 'delete') onDelete();
           },
-          itemBuilder: (context) => [
-            const PopupMenuItem(
-              value: 'edit',
-              child: ListTile(leading: Icon(Icons.edit), title: Text('Edit')),
-            ),
-            const PopupMenuItem(
-              value: 'delete',
-              child:
-                  ListTile(leading: Icon(Icons.delete), title: Text('Delete')),
-            ),
-          ],
+          itemBuilder:
+              (context) => [
+                const PopupMenuItem(
+                  value: 'edit',
+                  child: ListTile(
+                    leading: Icon(Icons.edit),
+                    title: Text('Edit'),
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'delete',
+                  child: ListTile(
+                    leading: Icon(Icons.delete),
+                    title: Text('Delete'),
+                  ),
+                ),
+              ],
           icon: const Icon(Icons.more_vert),
         ),
       ),

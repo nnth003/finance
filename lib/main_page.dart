@@ -15,9 +15,10 @@ class MainPage extends StatefulWidget {
   @override
   _MainPageState createState() => _MainPageState();
 }
-
+ 
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
+  bool isPremiumUnlocked = true; // Giả lập trạng thái đã thanh toán
 
   void _onItemTapped(int index) {
     setState(() {
@@ -25,22 +26,64 @@ class _MainPageState extends State<MainPage> {
     });
   }
 
-  final List<Widget> _pages = [
-    DashboardScreen(), // Replace with your actual implementation
-    AnalyticsPage(),
-    const CategoryManagementPage(),
-        ChatScreen(),
-
-    SpendingPlanScreen(), // Replace with your actual implementation
-     // Replace with your actual implementation
-        AccountPage(), 
-// Replace with your actual implementation
-  ];
+  void _showPaymentDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Mở khóa tính năng"),
+          content: const Text("Bạn cần thanh toán để sử dụng tính năng này."),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Hủy"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  isPremiumUnlocked = true;
+                });
+                Navigator.pop(context);
+              },
+              child: const Text("Thanh toán"),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final transactionProvider =
         Provider.of<TransactionProvider>(context, listen: false);
+
+    final List<Widget> _pages = [
+      DashboardScreen(),
+      AnalyticsPage(),
+      const CategoryManagementPage(),
+          ChatScreen(),
+
+      /// ChatScreen có lớp mờ khi chưa thanh toán
+      Stack(
+        children: [
+          if (!isPremiumUnlocked)
+                SpendingPlanScreen(),
+
+            Container(
+              color: Colors.black.withOpacity(0.6),
+              child: Center(
+                child: ElevatedButton(
+                  onPressed: _showPaymentDialog,
+                  child: const Text("Mở khóa tính năng"),
+                ),
+              ),
+            ),
+        ],
+      ),
+
+      AccountPage(),
+    ];
 
     return Scaffold(
       body: _pages[_selectedIndex],
@@ -74,11 +117,9 @@ class _MainPageState extends State<MainPage> {
                   GButton(icon: Icons.home, text: 'Home'),
                   GButton(icon: Icons.analytics, text: 'Analytics'),
                   GButton(icon: Icons.category, text: 'Categories'),
-                  GButton(icon: Icons.airplane_ticket_sharp, text: 'Chat Ai'),
-                 GButton(icon: Icons.place_rounded, text: 'Plan'),
-
+                  GButton(icon: Icons.adb, text: 'Chat Ai'),
+                  GButton(icon: Icons.text_snippet, text: 'Plan'),
                   GButton(icon: Icons.person, text: 'Accounts'),
-
                 ],
               ),
             ),

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../provider/transactionProvider.dart';
 import 'notification_page.dart'; // Ensure this file exists
 import 'package:firebase_auth/firebase_auth.dart';
 import '../auth/login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -13,9 +15,12 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class DashboardScreenState extends State<DashboardScreen> {
+  final currencyFormat = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
+
   // Helper method to group transactions by date
   Map<String, List<Map<String, dynamic>>> _groupTransactionsByDate(
-      List<Map<String, dynamic>> transactions) {
+    List<Map<String, dynamic>> transactions,
+  ) {
     final Map<String, List<Map<String, dynamic>>> grouped = {};
     final now = DateTime.now();
 
@@ -46,7 +51,8 @@ class DashboardScreenState extends State<DashboardScreen> {
 
   // Calculate total balance, income, and expenses
   Map<String, double> calculateBalances(
-      List<Map<String, dynamic>> transactions) {
+    List<Map<String, dynamic>> transactions,
+  ) {
     double totalBalance = 0;
     double income = 0;
     double expenses = 0;
@@ -67,14 +73,16 @@ class DashboardScreenState extends State<DashboardScreen> {
       'expenses': expenses,
     };
   }
+
   Future<String> _getUserFirstName() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       try {
-        final doc = await FirebaseFirestore.instance
-            .collection('user_info')
-            .doc(user.uid)
-            .get();
+        final doc =
+            await FirebaseFirestore.instance
+                .collection('user_info')
+                .doc(user.uid)
+                .get();
         if (doc.exists) {
           return doc['first_name'] ?? 'User'; // Fallback to 'User' if not found
         }
@@ -85,7 +93,6 @@ class DashboardScreenState extends State<DashboardScreen> {
     return 'User'; // Fallback if no user or error
   }
 
- 
   @override
   Widget build(BuildContext context) {
     return Consumer<TransactionProvider>(
@@ -120,8 +127,9 @@ class DashboardScreenState extends State<DashboardScreen> {
                       return const Row(
                         children: [
                           CircleAvatar(
-                            backgroundImage:
-                                NetworkImage("https://i.pravatar.cc/150?img=3"),
+                            backgroundImage: NetworkImage(
+                              "https://i.pravatar.cc/150?img=3",
+                            ),
                           ),
                           SizedBox(width: 10),
                           Text(
@@ -139,8 +147,9 @@ class DashboardScreenState extends State<DashboardScreen> {
                     return Row(
                       children: [
                         const CircleAvatar(
-                          backgroundImage:
-                              NetworkImage("https://i.pravatar.cc/150?img=3"),
+                          backgroundImage: NetworkImage(
+                            "https://i.pravatar.cc/150?img=3",
+                          ),
                         ),
                         const SizedBox(width: 10),
                         Text(
@@ -182,7 +191,8 @@ class DashboardScreenState extends State<DashboardScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const NotificationsPage()),
+                          builder: (context) => const NotificationsPage(),
+                        ),
                       );
                     },
                   ),
@@ -196,8 +206,8 @@ class DashboardScreenState extends State<DashboardScreen> {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                            builder: (context) =>
-                                const LoginPage()), // Replace with your SignInPage widget
+                          builder: (context) => const LoginPage(),
+                        ), // Replace with your SignInPage widget
                       );
                     },
                   ),
@@ -210,11 +220,12 @@ class DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     const SizedBox(height: 10),
                     Text(
-                      "\$${balances['totalBalance']!.toStringAsFixed(2)}",
+                      currencyFormat.format(balances['totalBalance']),
                       style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue),
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue,
+                      ),
                     ),
                     const SizedBox(height: 5),
                     const Text(
@@ -228,6 +239,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                         _buildBalanceCard(
                           "Income",
                           balances['income']!,
+
                           Icons.arrow_upward,
                           const Color.fromARGB(255, 6, 210, 111),
                         ),
@@ -245,52 +257,66 @@ class DashboardScreenState extends State<DashboardScreen> {
                       child: Text(
                         "Recent Transactions",
                         style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Color.fromARGB(255, 82, 80, 80)),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Color.fromARGB(255, 82, 80, 80),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 10),
                     Expanded(
-                      child: transactions.isEmpty
-                          ? const Center(
-                              child: Text(
-                                "No transactions yet.",
-                                style:
-                                    TextStyle(fontSize: 16, color: Colors.grey),
+                      child:
+                          transactions.isEmpty
+                              ? const Center(
+                                child: Text(
+                                  "No transactions yet.",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              )
+                              : ListView(
+                                padding: const EdgeInsets.only(top: 5),
+                                children:
+                                    transactionsByDate.entries.map((entry) {
+                                      return Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            entry.key,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          
+
+                                          const SizedBox(height: 5),
+                                          ...entry.value.map(
+                                            (
+                                              transaction,
+                                              
+                                            ) => _buildTransactionCard(
+                                              transaction["title"],
+                                              transaction["description"] ??
+                                                  "${transaction['type']} - ${transaction['category'] ?? 'Uncategorized'}",
+                                              transaction["amount"],
+                                              _getIconForCategory(
+                                                transaction["category"], 
+                                              ),
+                                              _getColorForType(
+                                                transaction["type"],
+                                              ),
+                                              transaction["date"],
+                                            ),
+                                          ),
+                                          const SizedBox(height: 10),
+                                        ],
+                                      );
+                                    }).toList(),
                               ),
-                            )
-                          : ListView(
-                              padding: const EdgeInsets.only(top: 5),
-                              children: transactionsByDate.entries.map((entry) {
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      entry.key,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 5),
-                                    ...entry.value.map(
-                                      (transaction) => _buildTransactionCard(
-                                        transaction["title"],
-                                        transaction["description"] ??
-                                            "${transaction['type']} - ${transaction['category'] ?? 'Uncategorized'}",
-                                        transaction["amount"],
-                                        _getIconForCategory(
-                                            transaction["category"]),
-                                        _getColorForType(transaction["type"]),
-                                        transaction["date"],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                  ],
-                                );
-                              }).toList(),
-                            ),
                     ),
                   ],
                 ),
@@ -335,7 +361,10 @@ class DashboardScreenState extends State<DashboardScreen> {
                 ),
                 const SizedBox(height: 7),
                 Text(
-                  "\$${amount.toStringAsFixed(2)}",
+                  NumberFormat.currency(
+                    locale: 'vi_VN',
+                    symbol: '₫',
+                  ).format(amount),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -344,6 +373,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                 ),
               ],
             ),
+         
             Icon(icon, color: Colors.white, size: 30),
           ],
         ),
@@ -366,11 +396,7 @@ class DashboardScreenState extends State<DashboardScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 6,
-            offset: Offset(2, 2),
-          ),
+          BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(2, 2)),
         ],
       ),
       child: Row(
@@ -379,7 +405,9 @@ class DashboardScreenState extends State<DashboardScreen> {
           Row(
             children: [
               CircleAvatar(
-                backgroundColor: iconColor.withOpacity(0.2),
+                backgroundColor:  iconColor.withOpacity(0.2), // Adjust opacity for better visibility
+                radius: 20, 
+                // child: Icon(icon., color: iconColor),
                 child: Icon(icon, color: iconColor),
               ),
               const SizedBox(width: 12),
@@ -405,7 +433,10 @@ class DashboardScreenState extends State<DashboardScreen> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                "\$${amount.abs().toStringAsFixed(2)}",
+                NumberFormat.currency(
+                  locale: 'vi_VN',
+                  symbol: '₫',
+                ).format(amount),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -423,18 +454,37 @@ class DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  IconData _getIconForCategory(String? category) {
-    switch (category ?? 'Uncategorized') {
-      case 'Shopping':
-        return Icons.shopping_bag;
-      case 'Food':
-        return Icons.local_dining;
-      case 'Transport':
-        return Icons.directions_car;
-      default:
-        return Icons.category;
-    }
+IconData _getIconForCategory(String? category) {
+  switch (category ?? 'Uncategorized') {
+    case 'Shopping':
+      return Icons.shopping_cart;
+    case 'Food':
+      return Icons.fastfood;
+    case 'Transport':
+      return Icons.directions_car;
+    case 'Health':
+      return Icons.healing;
+    case 'Entertainment':
+      return Icons.movie;
+    case 'Bills':
+      return Icons.receipt;
+    case 'Education':
+      return Icons.school;
+    case 'Salary':
+      return Icons.attach_money;
+    case 'Gift':
+      return Icons.card_giftcard;
+    case 'Investment':
+      return Icons.trending_up;
+    case 'Travel':
+      return Icons.flight;
+    default:
+      return Icons.category;
   }
+}
+
+
+
 
   Color _getColorForType(String? type) {
     switch (type ?? 'Uncategorized') {

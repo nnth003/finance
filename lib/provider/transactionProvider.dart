@@ -169,7 +169,7 @@ class _TransactionDialogState extends State<TransactionDialog> { // State của 
               TextFormField( // Trường nhập tiêu đề.
                 controller: _titleController,
                 decoration: const InputDecoration(labelText: 'Title'),
-                validator: (value) => value!.isEmpty ? 'Enter a title' : null,
+                validator: (value) => value!.isEmpty ? '   a title' : null,
               ),
               TextFormField( // Trường nhập số tiền.
                 controller: _amountController,
