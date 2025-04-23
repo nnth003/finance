@@ -11,9 +11,17 @@
   ```
 
 ## 3. Screenshot
-| Home                                | Expense                                   | Cateory Management                              | Profile                                   | Notifications                                         |
-|-------------------------------------------------|-------------------------------------------------|-------------------------------------------------|-------------------------------------------------|-------------------------------------------------------|
-| ![Home](assets/screenshot/home.png) | ![Expense](assets/screenshot/expense.png) | ![Categories](assets/screenshot/categories.png) | ![Profile](assets/screenshot/profile.png) | ![Notifications](assets/screenshot/notifications.png) |
+| Home                                         | Expense                                   | Category Management                        | Profile                                  |
+|----------------------------------------------|-------------------------------------------|--------------------------------------------|------------------------------------------|
+| ![Home](assets/screenshot/hom.png)           | ![Expense](assets/screenshot/expens.png)  | ![Categories](assets/screenshot/categories.png) | ![Profile](assets/screenshot/profil.png) |
+
+| Notifications                                | Signup                                    | Signin                                    | Login                                    |
+|----------------------------------------------|-------------------------------------------|-------------------------------------------|------------------------------------------|
+| ![Notifications](assets/screenshot/notifications.png) | ![Signup](assets/screenshot/signup.png)   | ![Signin](assets/screenshot/signin.png)    | ![Login](assets/screenshot/login.png)     |
+
+| Add Transaction                              | Add Category                               | AI Chat                                    | Plan                                     |
+|----------------------------------------------|-------------------------------------------|-------------------------------------------|------------------------------------------|
+| ![Add Transaction](assets/screenshot/addtransaction.png) | ![Add Category](assets/screenshot/addcategory.png) | ![AI Chat](assets/screenshot/aichat.png)  | ![Plan](assets/screenshot/plan.png)      |
 
 ## 4. Xử lý lỗi: 
 - Nếu source nằm trên ổ C và project nằm trên ổ D và gặp lỗi như sau:``` 
@@ -93,7 +101,6 @@ await Firebase.initializeApp(
   messagingSenderId: "348738583132",
   appId: "1:348738583132:web:1fd0d46063844ec5624499",)
     );
-
 
 
   
