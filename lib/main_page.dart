@@ -18,7 +18,7 @@ class MainPage extends StatefulWidget {
  
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
-  bool isPremiumUnlocked = true; // Giả lập trạng thái đã thanh toán
+  bool isPremiumUnlocked = false; // Giả lập trạng thái đã thanh toán
 
   void _onItemTapped(int index) {
     setState(() {
@@ -41,7 +41,7 @@ class _MainPageState extends State<MainPage> {
             ElevatedButton(
               onPressed: () {
                 setState(() {
-                  isPremiumUnlocked = true;
+                  isPremiumUnlocked = false;
                 });
                 Navigator.pop(context);
               },
@@ -63,24 +63,24 @@ class _MainPageState extends State<MainPage> {
       AnalyticsPage(),
       const CategoryManagementPage(),
           ChatScreen(),
-
-      /// ChatScreen có lớp mờ khi chưa thanh toán
-      Stack(
-        children: [
-          if (!isPremiumUnlocked)
                 SpendingPlanScreen(),
 
-            Container(
-              color: Colors.black.withOpacity(0.6),
-              child: Center(
-                child: ElevatedButton(
-                  onPressed: _showPaymentDialog,
-                  child: const Text("Mở khóa tính năng"),
-                ),
-              ),
-            ),
-        ],
-      ),
+      /// ChatScreen có lớp mờ khi chưa thanh toán
+      // Stack(
+      //   children: [
+      //     if (!isPremiumUnlocked)
+
+      //       Container(
+      //         color: Colors.black.withOpacity(0.6),
+      //         child: Center(
+      //           child: ElevatedButton(
+      //             onPressed: _showPaymentDialog,
+      //             child: const Text("Mở khóa tính năng"),
+      //           ),
+      //         ),
+      //       ),
+      //   ],
+      // ),
 
       AccountPage(),
     ];
