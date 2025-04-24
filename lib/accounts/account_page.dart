@@ -233,16 +233,16 @@ class ProfileScreen extends StatelessWidget {
                                 builder: (context) => const NotificationsPage()),
                           );
                         }),
-                    _buildListItem(
-                        icon: FontAwesomeIcons.shieldHalved,
-                        title: 'Privacy',
-                        color: const Color(0xFF8B5CF6),
-                        ontap: () {}),
-                    _buildListItem(
-                        icon: FontAwesomeIcons.circleInfo,
-                        title: 'About',
-                        color: const Color(0xFF64748B),
-                        ontap: () {}),
+                    // _buildListItem(
+                    //     icon: FontAwesomeIcons.shieldHalved,
+                    //     title: 'Privacy',
+                    //     color: const Color(0xFF8B5CF6),
+                    //     ontap: () {}),
+                    // _buildListItem(
+                    //     icon: FontAwesomeIcons.circleInfo,
+                    //     title: 'About',
+                    //     color: const Color(0xFF64748B),
+                    //     ontap: () {}),
                   ],
                 ),
               ),
@@ -344,7 +344,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             .update({
           'first_name': _nameController.text,
           'email': _emailController.text,
-          'phone': _phoneController.text,
+          'phone_number': _phoneController.text,
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profile updated successfully')),
