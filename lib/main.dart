@@ -16,12 +16,13 @@ void main() async {
   if (kIsWeb) {
     await Firebase.initializeApp(
       options: const FirebaseOptions(
-         apiKey: "AIzaSyAVJqTSPQqVZNQBc4ltmv-W_kdgcWJzwsE",
-  authDomain: "finance-400a3.firebaseapp.com",
-  projectId: "finance-400a3",
-  storageBucket: "finance-400a3.firebasestorage.app",
-  messagingSenderId: "348738583132",
-  appId: "1:348738583132:web:1fd0d46063844ec5624499",)
+        apiKey: "AIzaSyCXCj3Yrbp9cqGBM2OC_UBBMbyo3Xy0VtI",
+        authDomain: "finance-404f0.firebaseapp.com",
+        projectId: "finance-404f0",
+        storageBucket: "finance-404f0.firebasestorage.app",
+        messagingSenderId: "821545227691",
+        appId: "1:821545227691:web:fa03fb62810ad05215eeee",
+      ),
     );
   } else {
     await Firebase.initializeApp();
@@ -29,10 +30,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   bool hasSeenOnboarding = prefs.getBool('onboarding_complete') ?? false;
-  
+
   runApp(
     MultiProvider(
-      providers: [ 
+      providers: [
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
         ChangeNotifierProvider(create: (_) => TransactionProvider()),
       ],

@@ -5,6 +5,7 @@ import '../Home/notification_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../auth/login.dart';
+import 'AccountSettingsPage.dart';
 
 class AccountPage extends StatelessWidget {
   const AccountPage({super.key});
@@ -192,27 +193,34 @@ class ProfileScreen extends StatelessWidget {
                 child: ListView(
                   padding: EdgeInsets.symmetric(vertical: 16.h),
                   children: [
-                    _buildSectionHeader('General'),
-                    _buildListItem(
-                      icon: FontAwesomeIcons.bank,
-                      title: 'Bank Location',
-                      subtitle: '7307 Grand Ave, Flushing NY 11347',
-                      color: const Color(0xFF6366F1),
-                      ontap: () {},
-                    ),
-                    _buildListItem(
-                      icon: FontAwesomeIcons.wallet,
-                      title: 'My Wallet',
-                      subtitle: 'Manage your saved wallet',
-                      color: const Color(0xFF10B981),
-                      ontap: () {},
-                    ),
+                    // _buildSectionHeader('General'),
+                    // _buildListItem(
+                    //   icon: FontAwesomeIcons.bank,
+                    //   title: 'Bank Location',
+                    //   subtitle: '7307 Grand Ave, Flushing NY 11347',
+                    //   color: const Color(0xFF6366F1),
+                    //   ontap: () {},
+                    // ),
+                    // _buildListItem(
+                    //   icon: FontAwesomeIcons.wallet,
+                    //   title: 'My Wallet',
+                    //   subtitle: 'Manage your saved wallet',
+                    //   color: const Color(0xFF10B981),
+                    //   ontap: () {},
+                    // ),
                     _buildSectionHeader('Account'),
                     _buildListItem(
                       icon: FontAwesomeIcons.userGear,
                       title: 'Account Settings',
                       color: const Color(0xFF3B82F6),
-                      ontap: () {},
+                      ontap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AccountSettingsPage(),
+                          ),
+                        );
+                      },
                     ),
                     _buildListItem(
                         icon: FontAwesomeIcons.bell,
