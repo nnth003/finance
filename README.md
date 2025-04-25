@@ -23,9 +23,9 @@
 |----------------------------------------------|-------------------------------------------|-------------------------------------------|------------------------------------------|
 | ![Add Transaction](assets/screenshot/addtransaction.png) | ![Add Category](assets/screenshot/addcategory.png) | ![AI Chat](assets/screenshot/aichat.png)  | ![Plan](assets/screenshot/plan.png)      |
 
-| Home | Expense | Categories | Profile | Notifications | Signup | Signin | Login | Add Transaction | Add Category |
-|------|---------|------------|---------|----------------|--------|--------|-------|------------------|---------------|
-| ![Home](assets/screenshot/hom.png) | ![Expense](assets/screenshot/expens.png) | ![Categories](assets/screenshot/categories.png) | ![Profile](assets/screenshot/profil.png) | ![Notifications](assets/screenshot/notifications.png) | ![Signup](assets/screenshot/signup.png) | ![Signin](assets/screenshot/signin.png) | ![Login](assets/screenshot/login.png) | ![Add Transaction](assets/screenshot/addtransaction.png) | ![Add Category](assets/screenshot/addcategory.png) |
+| Account Setting | Change Password | Devices | Plan Goals | Plan Out | Plan Success | Theme |
+|-----------------|-----------------|---------|------------|----------|---------------|--------|
+| ![Account Setting](assets/screenshot/account_setting.png) | ![Change Password](assets/screenshot/changepassword.png) | ![Devices](assets/screenshot/devices.png) | ![Plan Goals](assets/screenshot/plan_goals.png) | ![Plan Out](assets/screenshot/plan_out.png) | ![Plan Success](assets/screenshot/plan_success.png) | ![Theme](assets/screenshot/theme.png) |
 
 ## 4. Xử lý lỗi: 
 - Nếu source nằm trên ổ C và project nằm trên ổ D và gặp lỗi như sau:``` 
