@@ -424,7 +424,7 @@ class FilteredTransactionsScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: isOver ? Colors.red : Colors.green,
+                  color: isOver ? Colors.green : Colors.red,
                 ),
               ),
               subtitle: Column(
@@ -441,8 +441,9 @@ class FilteredTransactionsScreen extends StatelessWidget {
               ),
               trailing:
                   isOver
-                      ? const Icon(Icons.warning, color: Colors.red)
-                      : const Icon(Icons.check_circle, color: Colors.green),
+                    ? const Icon(Icons.check_circle, color: Colors.green)
+
+              : const Icon(Icons.warning, color: Colors.red)
             ),
           );
         },
