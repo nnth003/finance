@@ -23,6 +23,61 @@
 |----------------------------------------------|-------------------------------------------|-------------------------------------------|------------------------------------------|
 | ![Add Transaction](assets/screenshot/addtransaction.png) | ![Add Category](assets/screenshot/addcategory.png) | ![AI Chat](assets/screenshot/aichat.png)  | ![Plan](assets/screenshot/plan.png)      |
 
+<!-- Row 1 -->
+<div style="display: flex; overflow-x: auto; gap: 10px; padding: 10px 0;">
+  <div>
+    <p>Home</p>
+    <img src="assets/screenshot/hom.png" alt="Home">
+  </div>
+  <div>
+    <p>Expense</p>
+    <img src="assets/screenshot/expens.png" alt="Expense">
+  </div>
+  <div>
+    <p>Categories</p>
+    <img src="assets/screenshot/categories.png" alt="Categories">
+  </div>
+  <div>
+    <p>Profile</p>
+    <img src="assets/screenshot/profil.png" alt="Profile">
+  </div>
+  <div>
+    <p>Notifications</p>
+    <img src="assets/screenshot/notifications.png" alt="Notifications">
+  </div>
+  <div>
+    <p>Signup</p>
+    <img src="assets/screenshot/signup.png" alt="Signup">
+  </div>
+  <div>
+    <p>Signin</p>
+    <img src="assets/screenshot/signin.png" alt="Signin">
+  </div>
+  <div>
+    <p>Login</p>
+    <img src="assets/screenshot/login.png" alt="Login">
+  </div>
+  <div>
+    <p>Add Transaction</p>
+    <img src="assets/screenshot/addtransaction.png" alt="Add Transaction">
+  </div>
+  <div>
+    <p>Add Category</p>
+    <img src="assets/screenshot/addcategory.png" alt="Add Category">
+  </div>
+</div>
+
+<!-- Row 2 -->
+<div style="display: flex; overflow-x: auto; gap: 10px; padding: 10px 0;">
+  <div>
+    <p>AI Chat</p>
+    <img src="assets/screenshot/aichat.png" alt="AI Chat">
+  </div>
+  <div>
+    <p>Plan</p>
+    <img src="assets/screenshot/plan.png" alt="Plan">
+  </div>
+</div>
 ## 4. Xử lý lỗi: 
 - Nếu source nằm trên ổ C và project nằm trên ổ D và gặp lỗi như sau:``` 
     PS D:\Workspace\flutter\MyFinance_Management\android> .\gradlew clean build
@@ -58,49 +113,6 @@
     - Variable name: ```PUB_CACHE``` 
     - Variable value: ```D:\FlutterPubCache```
    
-  Thêm Database  vào
-  chọn androi/app/google-services.json
-  {
-  "project_info": {
-    "project_number": "348738583132",
-    "project_id": "finance-400a3",
-    "storage_bucket": "finance-400a3.firebasestorage.app"
-  },
-  "client": [
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:348738583132:android:485c43ed4d774f04624499",
-        "android_client_info": {
-          "package_name": "com.example.finance"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyCkqKeP8Kjb2B2wimSTtVOE7dSRT_kSAak"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    }
-  ],
-  "configuration_version": "1"
-
-}
-
-tiếp tục vào file main
-await Firebase.initializeApp(
-      options: const FirebaseOptions(
-         apiKey: "AIzaSyAVJqTSPQqVZNQBc4ltmv-W_kdgcWJzwsE",
-  authDomain: "finance-400a3.firebaseapp.com",
-  projectId: "finance-400a3",
-  storageBucket: "finance-400a3.firebasestorage.app",
-  messagingSenderId: "348738583132",
-  appId: "1:348738583132:web:1fd0d46063844ec5624499",)
-    );
 
 
   
