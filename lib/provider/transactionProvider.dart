@@ -3,109 +3,110 @@ import 'package:finance/provider/category_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-// Ensure this exists
 
-class TransactionProvider with ChangeNotifier { // Lớp quản lý các giao dịch, kế thừa `ChangeNotifier` để thông báo khi có thay đổi.
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance; // Khởi tạo đối tượng Firestore để truy cập cơ sở dữ liệu.
-  final FirebaseAuth _auth = FirebaseAuth.instance; // Khởi tạo đối tượng FirebaseAuth để xác thực người dùng.
+import 'ThemeProvider.dart';
 
-  Stream<List<Map<String, dynamic>>> get transactionsStream { // Stream để lấy danh sách giao dịch từ Firebase.
-    final user = _auth.currentUser; // Lấy thông tin người dùng hiện tại.
-    if (user == null) { // Nếu người dùng chưa đăng nhập, trả về một stream rỗng.
+class TransactionProvider with ChangeNotifier {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  Stream<List<Map<String, dynamic>>> get transactionsStream {
+    final user = _auth.currentUser;
+    if (user == null) {
       return const Stream.empty();
     }
     return _firestore
-        .collection('users') // Truy cập vào collection `users` trong Firestore.
-        .doc(user.uid) // Dùng UID người dùng hiện tại để truy cập tài liệu của họ.
-        .collection('transactions') // Truy cập vào collection `transactions` (giao dịch của người dùng).
-        .snapshots() // Lắng nghe các thay đổi trong collection này.
-        .map((snapshot) { // Chuyển đổi snapshot thành danh sách các giao dịch.
-      return snapshot.docs.map((doc) {
-        final data = doc.data(); // Lấy dữ liệu từ mỗi tài liệu.
-        data['id'] = doc.id; // Thêm ID tài liệu vào dữ liệu.
-        return data; // Trả về dữ liệu.
-      }).toList();
-    });
+        .collection('users')
+        .doc(user.uid)
+        .collection('transactions')
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs.map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id;
+            return data;
+          }).toList();
+        });
   }
 
-  void showTransactionDialog(BuildContext context, {String? id}) { // Hiển thị hộp thoại để thêm hoặc chỉnh sửa giao dịch.
+  void showTransactionDialog(BuildContext context, {String? id}) {
     showDialog(
       context: context,
       builder: (context) {
         return TransactionDialog(
-          id: id, // Truyền ID nếu có, để xác định giao dịch cần chỉnh sửa.
+          id: id,
           onSave: () {
-            notifyListeners(); // Khi lưu xong, thông báo với các lắng nghe để cập nhật giao diện.
+            notifyListeners();
           },
         );
       },
     );
   }
 
-  Future<void> deleteTransaction(String id) async { // Hàm xóa giao dịch theo ID.
-    final user = _auth.currentUser; // Lấy người dùng hiện tại.
-    if (user != null) { // Kiểm tra nếu người dùng đã đăng nhập.
+  Future<void> deleteTransaction(String id) async {
+    final user = _auth.currentUser;
+    if (user != null) {
       await _firestore
-          .collection('users') // Truy cập collection `users`.
-          .doc(user.uid) // Dùng UID người dùng.
-          .collection('transactions') // Truy cập collection `transactions`.
-          .doc(id) // Lấy tài liệu giao dịch theo ID.
-          .delete(); // Xóa tài liệu.
-      notifyListeners(); // Thông báo các lắng nghe để cập nhật giao diện.
+          .collection('users')
+          .doc(user.uid)
+          .collection('transactions')
+          .doc(id)
+          .delete();
+      notifyListeners();
     }
   }
 }
 
+class TransactionDialog extends StatefulWidget {
+  final String? id;
+  final VoidCallback onSave;
 
-class TransactionDialog extends StatefulWidget { // Định nghĩa một StatefulWidget để hiển thị hộp thoại thêm/chỉnh sửa giao dịch.
-  final String? id; // ID của giao dịch nếu có (để chỉnh sửa).
-  final VoidCallback onSave; // Hàm callback khi lưu giao dịch.
-
-  const TransactionDialog({super.key, this.id, required this.onSave}); // Constructor của lớp, nhận vào ID và callback.
+  const TransactionDialog({super.key, this.id, required this.onSave});
 
   @override
-  _TransactionDialogState createState() => _TransactionDialogState(); // Tạo đối tượng state cho widget.
+  _TransactionDialogState createState() => _TransactionDialogState();
 }
 
-class _TransactionDialogState extends State<TransactionDialog> { // State của TransactionDialog.
-  final _formKey = GlobalKey<FormState>(); // Khóa toàn cục cho form để xác nhận dữ liệu.
-  late final TextEditingController _titleController; // Controller cho trường tiêu đề.
-  late final TextEditingController _amountController; // Controller cho trường số tiền.
-  String? _type = 'Expense'; // Loại giao dịch (Chi phí hoặc Thu nhập).
-  String? _category; // Danh mục giao dịch.
-  DateTime? _date; // Ngày giao dịch.
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance; // Khởi tạo đối tượng Firestore.
-  final FirebaseAuth _auth = FirebaseAuth.instance; // Khởi tạo đối tượng FirebaseAuth.
+class _TransactionDialogState extends State<TransactionDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _titleController;
+  late final TextEditingController _amountController;
+  String? _type = 'Expense';
+  String? _category;
+  DateTime? _date;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(); // Khởi tạo controller cho tiêu đề.
-    _amountController = TextEditingController(); // Khởi tạo controller cho số tiền.
-    _date = DateTime.now(); // Khởi tạo ngày giao dịch mặc định là ngày hiện tại.
+    _titleController = TextEditingController();
+    _amountController = TextEditingController();
+    _date = DateTime.now();
 
-    if (widget.id != null) { // Nếu có ID, nghĩa là chúng ta cần chỉnh sửa giao dịch.
-      _loadTransaction(); // Tải dữ liệu giao dịch hiện tại.
+    if (widget.id != null) {
+      _loadTransaction();
     }
   }
 
-  Future<void> _loadTransaction() async { // Hàm tải giao dịch từ Firestore.
-    final user = _auth.currentUser; // Lấy người dùng hiện tại.
-    if (user != null) { // Nếu người dùng đã đăng nhập.
-      final doc = await _firestore
-          .collection('users') // Truy cập collection `users`.
-          .doc(user.uid) // Lấy tài liệu của người dùng.
-          .collection('transactions') // Truy cập collection `transactions`.id
-          .doc(widget.id) // Lấy giao dịch theo ID.
-          .get(); // Lấy tài liệu.
-      if (doc.exists) { // Nếu tài liệu tồn tại.
-        final transaction = doc.data()!; // Lấy dữ liệu giao dịch.
+  Future<void> _loadTransaction() async {
+    final user = _auth.currentUser;
+    if (user != null) {
+      final doc =
+          await _firestore
+              .collection('users')
+              .doc(user.uid)
+              .collection('transactions')
+              .doc(widget.id)
+              .get();
+      if (doc.exists) {
+        final transaction = doc.data()!;
         setState(() {
-          _titleController.text = transaction['title']; // Điền tiêu đề vào controller.
-          _amountController.text = transaction['amount'].abs().toString(); // Điền số tiền vào controller (dùng `abs` để tránh số âm).
-          _type = transaction['type']; // Lấy loại giao dịch (Thu nhập/Chi phí).
-          _category = transaction['category']; // Lấy danh mục giao dịch.
-          _date = DateTime.parse(transaction['date']); // Chuyển đổi chuỗi ngày thành đối tượng DateTime.
+          _titleController.text = transaction['title'];
+          _amountController.text = transaction['amount'].abs().toString();
+          _type = transaction['type'];
+          _category = transaction['category'];
+          _date = DateTime.parse(transaction['date']);
         });
       }
     }
@@ -113,127 +114,242 @@ class _TransactionDialogState extends State<TransactionDialog> { // State của 
 
   @override
   void dispose() {
-    _titleController.dispose(); // Giải phóng bộ điều khiển khi widget bị hủy.
-    _amountController.dispose(); // Giải phóng bộ điều khiển khi widget bị hủy.
+    _titleController.dispose();
+    _amountController.dispose();
     super.dispose();
   }
 
-  Future<void> _saveTransaction() async { // Hàm lưu giao dịch vào Firestore.
-    if (_formKey.currentState!.validate()) { // Kiểm tra tính hợp lệ của form.
-      final user = _auth.currentUser; // Lấy người dùng hiện tại.
-      if (user != null) { // Nếu người dùng đã đăng nhập.
+  Future<void> _saveTransaction() async {
+    if (_formKey.currentState!.validate()) {
+      final user = _auth.currentUser;
+      if (user != null) {
         final transaction = {
-          'title': _titleController.text, // Lấy tiêu đề từ controller.
-          'amount': _type == 'Income' // Kiểm tra nếu là thu nhập thì giữ nguyên số tiền, nếu là chi phí thì lấy giá trị âm.
-              ? double.parse(_amountController.text)
-              : -double.parse(_amountController.text),
-          'type': _type, // Loại giao dịch (Thu nhập/Chi phí).
-          'category': _category, // Danh mục giao dịch.
-          'date': _date!.toIso8601String().split('T')[0], // Ngày giao dịch (chuyển đổi thành chuỗi theo định dạng ISO).
+          'title': _titleController.text,
+          'amount':
+              _type == 'Income'
+                  ? double.parse(_amountController.text)
+                  : -double.parse(_amountController.text),
+          'type': _type,
+          'category': _category,
+          'date': _date!.toIso8601String().split('T')[0],
         };
 
-        if (widget.id != null) { // Nếu có ID, chỉnh sửa giao dịch.
+        if (widget.id != null) {
           await _firestore
-              .collection('users') // Truy cập collection `users`.
-              .doc(user.uid) // Lấy tài liệu của người dùng.
-              .collection('transactions') // Truy cập collection `transactions`.
-              .doc(widget.id) // Lấy giao dịch theo ID.
-              .update(transaction); // Cập nhật giao dịch.
-        } else { // Nếu không có ID, thêm mới giao dịch.
+              .collection('users')
+              .doc(user.uid)
+              .collection('transactions')
+              .doc(widget.id)
+              .update(transaction);
+        } else {
           await _firestore
-              .collection('users') // Truy cập collection `users`.
-              .doc(user.uid) // Lấy tài liệu của người dùng.
-              .collection('transactions') // Truy cập collection `transactions`.
-              .add(transaction); // Thêm giao dịch mới.
+              .collection('users')
+              .doc(user.uid)
+              .collection('transactions')
+              .add(transaction);
         }
-        widget.onSave(); // Gọi callback khi giao dịch đã được lưu.
-        Navigator.of(context).pop(); // Đóng hộp thoại sau khi lưu.
+        widget.onSave();
+        Navigator.of(context).pop();
       }
     }
   }
 
   @override
-  Widget build(BuildContext context) { // Xây dựng giao diện của hộp thoại.
-    final categoryProvider =
-        Provider.of<CategoryProvider>(context, listen: false); // Lấy danh mục từ provider.
-    final List<String> categories = categoryProvider.categories; // Lấy danh sách các danh mục.
+  Widget build(BuildContext context) {
+    final categoryProvider = Provider.of<CategoryProvider>(
+      context,
+      listen: false,
+    );
+    final List<String> categories = categoryProvider.categories;
 
-    return AlertDialog( // Hộp thoại hiển thị.
-      title: Text(widget.id == null ? 'Add Transaction' : 'Edit Transaction'), // Tiêu đề thay đổi tùy thuộc vào ID.
-      content: Form( // Form nhập liệu.
-        key: _formKey, // Khóa form.
-        child: SingleChildScrollView( // Cho phép cuộn nếu nội dung quá dài.
-          child: Column( // Các trường nhập liệu trong form.
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField( // Trường nhập tiêu đề.
-                controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Title'),
-                validator: (value) => value!.isEmpty ? '   a title' : null,
-              ),
-              TextFormField( // Trường nhập số tiền.
-                controller: _amountController,
-                decoration: const InputDecoration(labelText: 'Amount'),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value!.isEmpty) return 'Enter an amount';
-                  if (double.tryParse(value) == null) {
-                    return 'Enter a valid number';
-                  }
-                  return null;
-                },
-              ),
-              DropdownButtonFormField<String>( // Trường chọn loại giao dịch (Thu nhập/Chi phí).
-                value: _type,
-                items: ['Income', 'Expense']
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                    .toList(),
-                onChanged: (value) => setState(() => _type = value),
-                decoration: const InputDecoration(labelText: 'Type'),
-              ),
-              DropdownButtonFormField<String>( // Trường chọn danh mục giao dịch.
-                value: _category,
-                items: categories
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                    .toList(),
-                onChanged: (value) => setState(() => _category = value),
-                decoration: const InputDecoration(labelText: 'Category'),
-                hint: const Text('Select a category'),
-              ),
-              InputDecorator( // Trường chọn ngày giao dịch.
-                decoration: const InputDecoration(labelText: 'Date'),
-                child: Row(
-                  children: [
-                    Text(_date!.toIso8601String().split('T')[0]), // Hiển thị ngày hiện tại.
-                    IconButton(
-                      icon: const Icon(Icons.calendar_today),
-                      onPressed: () async {
-                        final picked = await showDatePicker(
-                          context: context,
-                          initialDate: _date!,
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2100),
-                        );
-                        if (picked != null) setState(() => _date = picked); // Chọn ngày mới.
-                      },
+    // Sử dụng Consumer<ThemeProvider> để lấy trạng thái chế độ sáng/tối
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final isDarkMode = themeProvider.isDarkMode;
+        return AlertDialog(
+          title: Text(
+            widget.id == null ? 'Add Transaction' : 'Edit Transaction',
+            // Đổi màu tiêu đề thành trắng trong chế độ tối
+            style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87),
+          ),
+          content: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: _titleController,
+                    decoration: InputDecoration(
+                      labelText: 'Title',
+                      // Đổi màu nhãn thành trắng trong chế độ tối
+                      labelStyle: TextStyle(
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                      ),
                     ),
-                  ],
+                    style: TextStyle(
+                      // Đổi màu văn bản nhập vào thành trắng trong chế độ tối
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
+                    validator:
+                        (value) => value!.isEmpty ? 'Enter a title' : null,
+                  ),
+                  TextFormField(
+                    controller: _amountController,
+                    decoration: InputDecoration(
+                      labelText: 'Amount',
+                      labelStyle: TextStyle(
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                      ),
+                    ),
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value!.isEmpty) return 'Enter an amount';
+                      if (double.tryParse(value) == null) {
+                        return 'Enter a valid number';
+                      }
+                      return null;
+                    },
+                  ),
+                  DropdownButtonFormField<String>(
+                    value: _type,
+                    items:
+                        ['Income', 'Expense']
+                            .map(
+                              (e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(
+                                  e,
+                                  style: TextStyle(
+                                    // Đổi màu các mục trong dropdown thành trắng trong chế độ tối
+                                    color:
+                                        isDarkMode
+                                            ? Colors.white
+                                            : Colors.black,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                    onChanged: (value) => setState(() => _type = value),
+                    decoration: InputDecoration(
+                      labelText: 'Type',
+                      labelStyle: TextStyle(
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                      ),
+                    ),
+                    style: TextStyle(
+                      // Đổi màu giá trị hiển thị của dropdown thành trắng trong chế độ tối
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
+                    dropdownColor:
+                        isDarkMode
+                            ? Colors
+                                .grey[800] // Đổi màu nền dropdown trong chế độ tối
+                            : Colors.white,
+                  ),
+                  DropdownButtonFormField<String>(
+                    value: _category,
+                    items:
+                        categories
+                            .map(
+                              (e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(
+                                  e,
+                                  style: TextStyle(
+                                    color:
+                                        isDarkMode
+                                            ? Colors.white
+                                            : Colors.black,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                    onChanged: (value) => setState(() => _category = value),
+                    decoration: InputDecoration(
+                      labelText: 'Category',
+                      labelStyle: TextStyle(
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                      ),
+                    ),
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
+                    hint: Text(
+                      'Select a category',
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                      ),
+                    ),
+                    dropdownColor: isDarkMode ? Colors.grey[800] : Colors.white,
+                  ),
+                  InputDecorator(
+                    decoration: InputDecoration(
+                      labelText: 'Date',
+                      labelStyle: TextStyle(
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Text(
+                          _date!.toIso8601String().split('T')[0],
+                          style: TextStyle(
+                            // Đổi màu văn bản ngày thành trắng trong chế độ tối
+                            color: isDarkMode ? Colors.white : Colors.black,
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.calendar_today,
+                            // Đổi màu icon thành trắng trong chế độ tối
+                            color: isDarkMode ? Colors.white : Colors.black,
+                          ),
+                          onPressed: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: _date!,
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2100),
+                            );
+                            if (picked != null) setState(() => _date = picked);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  // Đổi màu nút "Cancel" thành trắng trong chế độ tối
+                  color: isDarkMode ? Colors.white : Colors.black,
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-      actions: [ // Các nút hành động.
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(), // Hủy và đóng hộp thoại.
-          child: const Text('Cancel'),
-        ),
-        TextButton(
-          onPressed: _saveTransaction, // Lưu giao dịch.
-          child: Text(widget.id == null ? 'Add' : 'Save'),
-        ),
-      ],
+            ),
+            TextButton(
+              onPressed: _saveTransaction,
+              child: Text(
+                widget.id == null ? 'Add' : 'Save',
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

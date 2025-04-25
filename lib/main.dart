@@ -1,3 +1,4 @@
+import 'package:finance/provider/ThemeProvider.dart';
 import 'package:finance/provider/category_provider.dart';
 import 'package:finance/provider/transactionProvider.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -36,6 +37,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
         ChangeNotifierProvider(create: (_) => TransactionProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
       child: MyApp(showOnboarding: !hasSeenOnboarding),
     ),
@@ -48,15 +50,29 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key, required this.showOnboarding});
 
   @override
+  // Widget build(BuildContext context) {
+  //   return MaterialApp(
+  //     debugShowCheckedModeBanner: false,
+  //     title: 'Finance Tracker',
+  //     theme: ThemeData(
+  //       colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+  //       useMaterial3: true,
+  //     ),
+  //     home: showOnboarding ? const OnboardingScreen() : const AuthWrapper(),
+  //   );
+  // }
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Finance Tracker',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: showOnboarding ? const OnboardingScreen() : const AuthWrapper(),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Finance Tracker',
+          theme: ThemeProvider.lightTheme,
+          darkTheme: ThemeProvider.darkTheme,
+          themeMode: themeProvider.themeMode,
+          home: showOnboarding ? const OnboardingScreen() : const AuthWrapper(),
+        );
+      },
     );
   }
 }

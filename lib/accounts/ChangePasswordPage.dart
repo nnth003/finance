@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import '../provider/ThemeProvider.dart'; // Thêm import ThemeProvider
 
 class ChangePasswordPage extends StatefulWidget {
   const ChangePasswordPage({super.key});
@@ -30,15 +32,24 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     );
 
     try {
-      // Xác thực lại người dùng
       await user.reauthenticateWithCredential(cred);
-
-      // Cập nhật mật khẩu mới
       await user.updatePassword(_newPasswordController.text);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Đổi mật khẩu thành công")),
+        SnackBar(
+          content: Text(
+            "Đổi mật khẩu thành công",
+            style: TextStyle(
+              color: Provider.of<ThemeProvider>(context, listen: false).isDarkMode
+                  ? Colors.white
+                  : Colors.white, // Đổi màu văn bản SnackBar
+            ),
+          ),
+          backgroundColor: Provider.of<ThemeProvider>(context, listen: false).isDarkMode
+              ? Colors.grey[800]
+              : Colors.black, // Đổi màu nền SnackBar
+        ),
       );
-      Navigator.of(context).pop(); // Quay lại sau khi đổi thành công
+      Navigator.of(context).pop();
     } on FirebaseAuthException catch (e) {
       String message = "Đã có lỗi xảy ra.";
       if (e.code == 'wrong-password') {
@@ -48,7 +59,19 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
+        SnackBar(
+          content: Text(
+            message,
+            style: TextStyle(
+              color: Provider.of<ThemeProvider>(context, listen: false).isDarkMode
+                  ? Colors.white
+                  : Colors.white,
+            ),
+          ),
+          backgroundColor: Provider.of<ThemeProvider>(context, listen: false).isDarkMode
+              ? Colors.grey[800]
+              : Colors.black,
+        ),
       );
     } finally {
       setState(() {
@@ -59,43 +82,127 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Đổi mật khẩu")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _currentPasswordController,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: "Mật khẩu hiện tại"),
-                validator: (value) => value!.isEmpty ? 'Vui lòng nhập mật khẩu hiện tại' : null,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final isDarkMode = themeProvider.isDarkMode;
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(
+              "Đổi mật khẩu",
+              style: TextStyle(
+                color: isDarkMode ? Colors.white : Colors.white, // Đổi màu tiêu đề
               ),
-              TextFormField(
-                controller: _newPasswordController,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: "Mật khẩu mới"),
-                validator: (value) => value!.length < 6 ? 'Ít nhất 6 ký tự' : null,
-              ),
-              TextFormField(
-                controller: _confirmPasswordController,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: "Nhập lại mật khẩu mới"),
-                validator: (value) => value != _newPasswordController.text ? 'Mật khẩu không khớp' : null,
-              ),
-              const SizedBox(height: 20),
-              _isLoading
-                  ? const CircularProgressIndicator()
-                  : ElevatedButton(
-                onPressed: _changePassword,
-                child: const Text("Đổi mật khẩu"),
-              ),
-            ],
+            ),
+            backgroundColor: isDarkMode ? const Color(0xFF1E1E1E) : Colors.blueAccent, // Đổi màu AppBar
+            iconTheme: IconThemeData(
+              color: isDarkMode ? Colors.white : Colors.white, // Đổi màu icon back
+            ),
           ),
-        ),
-      ),
+          backgroundColor: isDarkMode ? const Color(0xFF121212) : Colors.white, // Đổi màu nền
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: _currentPasswordController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: "Mật khẩu hiện tại",
+                      labelStyle: TextStyle(
+                        color: isDarkMode ? Colors.white70 : Colors.black54, // Đổi màu nhãn
+                      ),
+                      border: const OutlineInputBorder(),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: isDarkMode ? Colors.white70 : Colors.black26, // Đổi màu viền
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: isDarkMode ? Colors.white : Colors.black, // Đổi màu viền khi focus
+                        ),
+                      ),
+                    ),
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white : Colors.black, // Đổi màu văn bản nhập vào
+                    ),
+                    validator: (value) => value!.isEmpty ? 'Vui lòng nhập mật khẩu hiện tại' : null,
+                  ),
+                  TextFormField(
+                    controller: _newPasswordController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: "Mật khẩu mới",
+                      labelStyle: TextStyle(
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                      ),
+                      border: const OutlineInputBorder(),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: isDarkMode ? Colors.white70 : Colors.black26,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: isDarkMode ? Colors.white : Colors.black,
+                        ),
+                      ),
+                    ),
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
+                    validator: (value) => value!.length < 6 ? 'Ít nhất 6 ký tự' : null,
+                  ),
+                  TextFormField(
+                    controller: _confirmPasswordController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: "Nhập lại mật khẩu mới",
+                      labelStyle: TextStyle(
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                      ),
+                      border: const OutlineInputBorder(),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: isDarkMode ? Colors.white70 : Colors.black26,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: isDarkMode ? Colors.white : Colors.black,
+                        ),
+                      ),
+                    ),
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
+                    validator: (value) => value != _newPasswordController.text ? 'Mật khẩu không khớp' : null,
+                  ),
+                  const SizedBox(height: 20),
+                  _isLoading
+                      ? const CircularProgressIndicator()
+                      : ElevatedButton(
+                    onPressed: _changePassword,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isDarkMode ? const Color(0xFF1E1E1E) : Colors.blue, // Đổi màu nút
+                      foregroundColor: isDarkMode ? Colors.white : Colors.white, // Đổi màu văn bản/icon
+                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                    ),
+                    child: Text(
+                      "Đổi mật khẩu",
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white : Colors.white, // Đổi màu văn bản nút
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

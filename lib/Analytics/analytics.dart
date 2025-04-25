@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
+import '../provider/ThemeProvider.dart';
 import '../provider/transactionProvider.dart';
 import 'package:intl/intl.dart';
 
@@ -23,19 +24,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   DateTime? _customEndDate;
 
   Map<String, double> _computeCategorySpending(
-    //   //{
-    // "title": "Ăn uống",
-    // "amount": 100.0,
-    // "type": "Expense",
-    // "category": "Food",
-    // "date": DateTime(2025, 4, 10)
     List<Map<String, dynamic>> transactions,
   ) {
-    // thời gian hiện tại
     final now = DateTime.now();
-    // ngày bắt đầu lọc giao dịch
     DateTime startDate;
-    // ngày kết thúc lọc giao dịch
     DateTime endDate = now;
 
     switch (_selectedFilter) {
@@ -137,7 +129,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     return Consumer<TransactionProvider>(
       builder: (context, provider, child) {
         return StreamBuilder<List<Map<String, dynamic>>>(
-          // lấy dữ liệu từ data base
           stream: provider.transactionsStream,
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
@@ -146,218 +137,252 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             if (snapshot.hasError) {
               return const Center(child: Text('Error loading transactions'));
             }
-            // lấy danh sách giao dịch
             final transactions = snapshot.data!;
-
-            // dùng để tính tổng giá trị từng category dùng để vẽ biểu đồ
-            // và lọc danh sách giao dịch theo filter đã chọn như oincome, expense, all
-            // và các khoảng thời gian như week, month, year, custom
             final categorySpending = _computeCategorySpending(transactions);
             final filteredTransactions = _filterTransactions(transactions);
-            final maxSpending = categorySpending.values.reduce(
-              (a, b) => a > b ? a : b,
-            );
-            final maxY =
-                maxSpending * 1.2; // Thêm 20% dư ra để hiển thị tốt hơn
-            return Scaffold(
-              appBar: AppBar(
-                title: const Text('Expense'),
-                backgroundColor: Colors.white,
-                elevation: 0,
-              ),
-              body: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildFilterButton('Week'),
-                        _buildFilterButton('Month'),
-                        _buildFilterButton('Year'),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.calendar_today,
-                            color: Colors.grey,
-                          ),
-                          onPressed: () async {
-                            final range = await showDateRangePicker(
-                              context: context,
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime(2100),
-                              initialDateRange:
-                                  _customStartDate != null &&
-                                          _customEndDate != null
-                                      ? DateTimeRange(
-                                        start: _customStartDate!,
-                                        end: _customEndDate!,
-                                      )
-                                      : null,
-                            );
-                            if (range != null) {
-                              setState(() {
-                                _customStartDate = range.start;
-                                _customEndDate = range.end;
-                                _selectedFilter = 'Custom';
-                              });
-                            }
-                          },
-                        ),
-                      ],
+            final maxSpending =
+                categorySpending.values.isNotEmpty
+                    ? categorySpending.values.reduce((a, b) => a > b ? a : b)
+                    : 0.0;
+            final maxY = maxSpending * 1.2;
+
+            return Consumer<ThemeProvider>(
+              builder: (context, themeProvider, child) {
+                final isDarkMode = themeProvider.isDarkMode;
+                return Scaffold(
+                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                  appBar: AppBar(
+                    backgroundColor:
+                        isDarkMode ? Colors.black : Colors.blueAccent,
+                    elevation: 0,
+                    title: Text(
+                      'Expense',
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white : Colors.white,
+                      ),
                     ),
-                    const SizedBox(height: 20),
-
-                    SizedBox(
-                      height: 200,
-                      child: BarChart(
-                        BarChartData(
-                          maxY: maxY, // Giới hạn maxY của biểu đồ
-                          alignment: BarChartAlignment.spaceAround,
-                          barGroups:
-                              categorySpending.entries.map((e) {
-                                final index = categorySpending.keys
-                                    .toList()
-                                    .indexOf(e.key);
-                                return BarChartGroupData(
-                                  x: index,
-                                  barRods: [
-                                    BarChartRodData(
-                                      toY: e.value,
-                                      color: _getColorForType('Income'),
-                                      width: 20,
-                                      borderRadius: const BorderRadius.vertical(
-                                        top: Radius.circular(4),
-                                      ),
-                                    ),
-                                  ],
-                                  showingTooltipIndicators: [0],
-                                );
-                              }).toList(),
-                          titlesData: FlTitlesData(
-                            bottomTitles: AxisTitles(
-                              sideTitles: SideTitles(
-
-                                showTitles: true,
-                                reservedSize: 30,
-                                getTitlesWidget: (value, meta) {
-                                  final category = categorySpending.keys
-                                      .elementAt(value.toInt());
-                                  return SideTitleWidget(
-                                    space: 8.0,
-                                    meta: meta,
-                                    child: Text(
-                                      category,
-                                      style: const TextStyle(
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  );
-                                },
+                  ),
+                  body: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _buildFilterButton('Week', isDarkMode),
+                            _buildFilterButton('Month', isDarkMode),
+                            _buildFilterButton('Year', isDarkMode),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.calendar_today,
+                                color: Colors.white,
                               ),
-                            ),
-                            leftTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: false,
-                                reservedSize: 40,
-                                getTitlesWidget:
-                                    (value, meta) => Text(
-                                      currencyFormat.format(value),
-                                      style: const TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                              ),
-                            ),
-                            topTitles: const AxisTitles(
-                              sideTitles: SideTitles(showTitles: false),
-                            ),
-                            rightTitles: const AxisTitles(
-                              sideTitles: SideTitles(showTitles: false),
-                            ),
-                          ),
-                          borderData: FlBorderData(show: false),
-                          gridData: const FlGridData(show: false),
-                          barTouchData: BarTouchData(
-                            enabled: true,
-                            touchTooltipData: BarTouchTooltipData(
-                              getTooltipItem: (
-                                group,
-                                groupIndex,
-                                rod,
-                                rodIndex,
-                              ) {
-                                final category = categorySpending.keys
-                                    .elementAt(group.x.toInt());
-                                return BarTooltipItem(
-                                  currencyFormat.format(
-                                    rod.toY,
-                                  ), // Hiển thị dạng 1.000.000₫
-                                  const TextStyle(color: Colors.white),
+                              onPressed: () async {
+                                final range = await showDateRangePicker(
+                                  context: context,
+                                  firstDate: DateTime(2000),
+                                  lastDate: DateTime(2100),
+                                  initialDateRange:
+                                      _customStartDate != null &&
+                                              _customEndDate != null
+                                          ? DateTimeRange(
+                                            start: _customStartDate!,
+                                            end: _customEndDate!,
+                                          )
+                                          : null,
                                 );
+                                if (range != null) {
+                                  setState(() {
+                                    _customStartDate = range.start;
+                                    _customEndDate = range.end;
+                                    _selectedFilter = 'Custom';
+                                  });
+                                }
                               },
                             ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          height: 200,
+                          child:
+                              categorySpending.isEmpty
+                                  ? const Center(
+                                    child: Text(
+                                      'No data to display',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  )
+                                  : BarChart(
+                                    BarChartData(
+                                      maxY: maxY,
+                                      alignment: BarChartAlignment.spaceAround,
+                                      barGroups:
+                                          categorySpending.entries.map((e) {
+                                            final index = categorySpending.keys
+                                                .toList()
+                                                .indexOf(e.key);
+                                            return BarChartGroupData(
+                                              x: index,
+                                              barRods: [
+                                                BarChartRodData(
+                                                  toY: e.value,
+                                                  color: _getColorForType(
+                                                    'Income',
+                                                  ),
+                                                  width: 20,
+                                                  borderRadius:
+                                                      const BorderRadius.vertical(
+                                                        top: Radius.circular(4),
+                                                      ),
+                                                ),
+                                              ],
+                                              showingTooltipIndicators: [0],
+                                            );
+                                          }).toList(),
+                                      titlesData: FlTitlesData(
+                                        bottomTitles: AxisTitles(
+                                          sideTitles: SideTitles(
+                                            showTitles: true,
+                                            reservedSize: 30,
+                                            getTitlesWidget: (value, meta) {
+                                              final category = categorySpending
+                                                  .keys
+                                                  .elementAt(value.toInt());
+                                              return SideTitleWidget(
+                                                space: 8.0,
+                                                meta: meta, // Thêm meta vào đây
+                                                child: Text(
+                                                  category,
+                                                  style: TextStyle(
+                                                    color:
+                                                        isDarkMode
+                                                            ? Colors.white
+                                                            : Colors.black,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                        leftTitles: AxisTitles(
+                                          sideTitles: SideTitles(
+                                            showTitles: false,
+                                            reservedSize: 40,
+                                            getTitlesWidget: (value, meta) {
+                                              return Text(
+                                                currencyFormat.format(value),
+                                                style: TextStyle(
+                                                  color:
+                                                      isDarkMode
+                                                          ? Colors.white
+                                                          : Colors.black,
+                                                  fontSize: 12,
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                        topTitles: const AxisTitles(
+                                          sideTitles: SideTitles(
+                                            showTitles: false,
+                                          ),
+                                        ),
+                                        rightTitles: const AxisTitles(
+                                          sideTitles: SideTitles(
+                                            showTitles: false,
+                                          ),
+                                        ),
+                                      ),
+                                      borderData: FlBorderData(show: false),
+                                      gridData: const FlGridData(show: false),
+                                      barTouchData: BarTouchData(
+                                        enabled: true,
+                                        touchTooltipData: BarTouchTooltipData(
+                                          getTooltipItem: (
+                                            group,
+                                            groupIndex,
+                                            rod,
+                                            rodIndex,
+                                          ) {
+                                            final category = categorySpending
+                                                .keys
+                                                .elementAt(group.x.toInt());
+                                            return BarTooltipItem(
+                                              currencyFormat.format(rod.toY),
+                                              const TextStyle(
+                                                color: Colors.white,
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          'Detail Transactions',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: isDarkMode ? Colors.white : Colors.black87,
                           ),
                         ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Detail Transactions',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        _buildFilterButton('All'),
-                        const SizedBox(width: 12),
-                        _buildFilterButton('Income'),
-                        const SizedBox(width: 12),
-                        _buildFilterButton('Expense'),
-                        const SizedBox(width: 12),
-                        _buildFilterButton('PDF'),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            _buildFilterButton('All', isDarkMode),
+                            const SizedBox(width: 12),
+                            _buildFilterButton('Income', isDarkMode),
+                            const SizedBox(width: 12),
+                            _buildFilterButton('Expense', isDarkMode),
+                            const SizedBox(width: 12),
+                            _buildFilterButton('PDF', isDarkMode),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: filteredTransactions.length,
+                            itemBuilder: (context, index) {
+                              final t = filteredTransactions[index];
+                              return _buildTransactionCard(
+                                icon: _getIconForCategory(t['category']),
+                                iconColor:
+                                    t['type'] == 'Income'
+                                        ? Colors.green
+                                        : Colors.red,
+                                title: t['title'],
+                                description:
+                                    t['description'] ??
+                                    '${t['type']} - ${t['category'] ?? 'Uncategorized'}',
+                                amount: t['amount'],
+                                date: t['date'],
+                                onEdit:
+                                    () => provider.showTransactionDialog(
+                                      context,
+                                      id: t['id'],
+                                    ),
+                                onDelete:
+                                    () => provider.deleteTransaction(t['id']),
+                                isDarkMode: isDarkMode,
+                              );
+                            },
+                          ),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 10),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: filteredTransactions.length,
-                        itemBuilder: (context, index) {
-                          final t = filteredTransactions[index];
-                          return _buildTransactionCard(
-                            icon: _getIconForCategory(t['category']),
-                            iconColor:
-                                t['type'] == 'Income'
-                                    ? Colors.green
-                                    : Colors.red,
-                            title: t['title'],
-                            description:
-                                t['description'] ??
-                                '${t['type']} - ${t['category'] ?? 'Uncategorized'}',
-                            amount: t['amount'],
-                            date: t['date'],
-                            onEdit:
-                                () => provider.showTransactionDialog(
-                                  context,
-                                  id: t['id'],
-                                ),
-                            onDelete: () => provider.deleteTransaction(t['id']),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             );
           },
         );
@@ -373,14 +398,17 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     }
   }
 
-  Widget _buildFilterButton(String filter) {
+  Widget _buildFilterButton(String filter, bool isDarkMode) {
     return GestureDetector(
       onTap: () => setState(() => _selectedFilter = filter),
       child: Text(
         filter,
         style: TextStyle(
           fontSize: 16,
-          color: _selectedFilter == filter ? Colors.black : Colors.grey,
+          color:
+              _selectedFilter == filter
+                  ? (isDarkMode ? Colors.white : Colors.black)
+                  : (isDarkMode ? Colors.white70 : Colors.grey),
           fontWeight:
               _selectedFilter == filter ? FontWeight.bold : FontWeight.normal,
         ),
@@ -421,6 +449,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     required String date,
     required VoidCallback onEdit,
     required VoidCallback onDelete,
+    required bool isDarkMode,
   }) {
     final Color amountColor = _getColorForType(
       amount >= 0 ? 'Income' : 'Expense',
@@ -430,6 +459,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      color: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: iconColor.withOpacity(0.2),
@@ -444,7 +474,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
-                  color: Colors.blue[900],
+                  color: isDarkMode ? Colors.white : Colors.blue[900],
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -467,12 +497,18 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           children: [
             Text(
               description,
-              style: const TextStyle(fontSize: 14, color: Colors.grey),
+              style: TextStyle(
+                fontSize: 14,
+                color: isDarkMode ? Colors.white70 : Colors.grey,
+              ),
             ),
             const SizedBox(height: 2),
             Text(
               date,
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
+              style: TextStyle(
+                fontSize: 12,
+                color: isDarkMode ? Colors.white70 : Colors.grey,
+              ),
             ),
           ],
         ),
@@ -483,270 +519,41 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           },
           itemBuilder:
               (context) => [
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'edit',
                   child: ListTile(
-                    leading: Icon(Icons.edit),
-                    title: Text('Edit'),
-                  ),
-                ),
-                const PopupMenuItem(
-                  value: 'delete',
-                  child: ListTile(
-                    leading: Icon(Icons.delete),
-                    title: Text('Delete'),
-                  ),
-                ),
-              ],
-          icon: const Icon(Icons.more_vert),
-        ),
-      ),
-    );
-  }
-}
-
-class TransactionManagementPage extends StatefulWidget {
-  const TransactionManagementPage({super.key});
-
-  @override
-  TransactionManagementPageState createState() =>
-      TransactionManagementPageState();
-}
-
-class TransactionManagementPageState extends State<TransactionManagementPage> {
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<TransactionProvider>(
-      builder: (context, provider, child) {
-        return StreamBuilder<List<Map<String, dynamic>>>(
-          stream: provider.transactionsStream,
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasError) {
-              return const Center(child: Text('Error loading transactions'));
-            }
-            final transactions = snapshot.data!;
-
-            return Scaffold(
-              appBar: AppBar(
-                title: const Text('Transaction Management'),
-                backgroundColor: Colors.white,
-                elevation: 0,
-                leading: IconButton(
-                  icon: const Icon(
-                    Icons.arrow_back_ios_new,
-                    color: Colors.blue,
-                  ),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ),
-              body: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Manage Your Transactions',
+                    leading: Icon(
+                      Icons.edit,
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
+                    title: Text(
+                      'Edit',
                       style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        color: isDarkMode ? Colors.white : Colors.black,
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    Expanded(
-                      child:
-                          transactions.isEmpty
-                              ? const Center(
-                                child: Text(
-                                  'No transactions yet. Add one to get started!',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              )
-                              : ListView.builder(
-                                itemCount: transactions.length,
-                                itemBuilder: (context, index) {
-                                  final t = transactions[index];
-                                  return _buildTransactionCard(
-                                    icon: _getIconForCategory(t['category']),
-                                    iconColor: _getColorForType(t['type']),
-                                    title: t['title'],
-                                    description:
-                                        t['description'] ??
-                                        '${t['type']} - ${t['category'] ?? 'Uncategorized'}',
-                                    amount: t['amount'],
-                                    date: t['date'],
-                                    onEdit:
-                                        () => provider.showTransactionDialog(
-                                          context,
-                                          id: t['id'],
-                                        ),
-                                    onDelete:
-                                        () =>
-                                            provider.deleteTransaction(t['id']),
-                                  );
-                                },
-                              ),
-                    ),
-                    const SizedBox(height: 20),
-                    Center(
-                      child: ElevatedButton(
-                        onPressed:
-                            () => provider.showTransactionDialog(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 30,
-                            vertical: 15,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: const Text(
-                          'Add New Transaction',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  IconData _getIconForCategory(String? category) {
-    switch (category ?? 'Uncategorized') {
-      case 'Shopping':
-        return Icons.shopping_bag;
-      case 'Food':
-        return Icons.local_dining;
-      case 'Transport':
-        return Icons.directions_car;
-      default:
-        return Icons.category;
-    }
-  }
-
-  Color _getColorForType(String? type) {
-    switch (type ?? 'Uncategorized') {
-      case 'Income':
-        return Colors.green;
-      case 'Expense':
-        return Colors.red;
-      default:
-        return const Color.fromARGB(255, 241, 97, 97);
-    }
-  }
-
-  Widget _buildTransactionCard({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String description,
-    required double amount,
-    required String date,
-    required VoidCallback onEdit,
-    required VoidCallback onDelete,
-  }) {
-    final Color amountColor = _getColorForType(
-      amount >= 0 ? 'Income' : 'Expense',
-    );
-
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: iconColor.withOpacity(0.2),
-          child: Icon(icon, color: iconColor),
-        ),
-        title: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.blue[900],
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    description,
-                    style: const TextStyle(fontSize: 14, color: Colors.grey),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  NumberFormat.currency(
-                    locale: 'vi_VN',
-                    symbol: '₫',
-                  ).format(amount),
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: amountColor,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  date,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-              ],
-            ),
-          ],
-        ),
-        trailing: PopupMenuButton<String>(
-          onSelected: (value) {
-            if (value == 'edit') onEdit();
-            if (value == 'delete') onDelete();
-          },
-          itemBuilder:
-              (context) => [
-                const PopupMenuItem(
-                  value: 'edit',
-                  child: ListTile(
-                    leading: Icon(Icons.edit),
-                    title: Text('Edit'),
-                  ),
-                ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'delete',
                   child: ListTile(
-                    leading: Icon(Icons.delete),
-                    title: Text('Delete'),
+                    leading: Icon(
+                      Icons.delete,
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
+                    title: Text(
+                      'Delete',
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
                   ),
                 ),
               ],
-          icon: const Icon(Icons.more_vert),
+          icon: Icon(
+            Icons.more_vert,
+            color: isDarkMode ? Colors.white : Colors.black,
+          ),
         ),
       ),
     );

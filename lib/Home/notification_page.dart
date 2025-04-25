@@ -4,6 +4,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:provider/provider.dart';
 
+import '../provider/ThemeProvider.dart';
+
 // Define the Transaction class (unchanged)
 class Transaction {
   final String id;
@@ -46,7 +48,7 @@ class NotificationsPage extends StatefulWidget {
 
 class _NotificationsPageState extends State<NotificationsPage> {
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin();
   bool _notificationsTriggered = false;
 
   @override
@@ -57,10 +59,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   Future<void> _initializeNotifications() async {
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('app_icon'); // Replace with your app icon
+    AndroidInitializationSettings('app_icon'); // Replace with your app icon
 
     const InitializationSettings initializationSettings =
-        InitializationSettings(android: initializationSettingsAndroid);
+    InitializationSettings(android: initializationSettingsAndroid);
 
     await _flutterLocalNotificationsPlugin.initialize(initializationSettings);
   }
@@ -68,7 +70,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   // Updated: Show notification with "pay" or "receive" based on transaction type
   Future<void> _showPaymentReminderNotification(Transaction transaction) async {
     const AndroidNotificationDetails androidNotificationDetails =
-        AndroidNotificationDetails(
+    AndroidNotificationDetails(
       'payment_channel_id',
       'Payment Reminders',
       importance: Importance.max,
@@ -77,14 +79,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
     );
 
     const NotificationDetails notificationDetails =
-        NotificationDetails(android: androidNotificationDetails);
+    NotificationDetails(android: androidNotificationDetails);
 
     // Customize message based on transaction type
     String message = transaction.type == 'Expense'
         ? 'You have to pay: ${transaction.description}'
         : 'You have to receive: ${transaction.title}';
 
-    await _flutterLocalNotificationsPlugin.show( 
+    await _flutterLocalNotificationsPlugin.show(
       transaction.id.hashCode,
       'Payment Reminder',
       message,
@@ -94,61 +96,113 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TransactionProvider>(
-      builder: (context, provider, child) {
-        return StreamBuilder<List<Map<String, dynamic>>>(
-          stream: provider.transactionsStream,
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasError) {
-              return const Center(child: Text('Error loading transactions'));
-            }
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final isDarkMode = themeProvider.isDarkMode;
+        return Consumer<TransactionProvider>(
+          builder: (context, provider, child) {
+            return StreamBuilder<List<Map<String, dynamic>>>(
+              stream: provider.transactionsStream,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text(
+                      'Error loading transactions',
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  );
+                }
 
-            final transactions = snapshot.data!
-                .map((item) => Transaction.fromMap(item))
-                .toList();
-            final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-            final todayTransactions =
+                final transactions = snapshot.data!
+                    .map((item) => Transaction.fromMap(item))
+                    .toList();
+                final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+                final todayTransactions =
                 transactions.where((t) => t.date == today).toList();
 
-            if (todayTransactions.isNotEmpty && !_notificationsTriggered) {
-              for (var transaction in todayTransactions) {
-                _showPaymentReminderNotification(transaction);
-              }
-              _notificationsTriggered = true;
-            }
+                if (todayTransactions.isNotEmpty && !_notificationsTriggered) {
+                  for (var transaction in todayTransactions) {
+                    _showPaymentReminderNotification(transaction);
+                  }
+                  _notificationsTriggered = true;
+                }
 
-            return Scaffold(
-              appBar: AppBar(
-                title: const Text('Notifications'),
-              ),
-              body: todayTransactions.isEmpty
-                  ? const EmptyNotificationsScreen()
-                  : ListView.builder(
-                      itemCount: todayTransactions.length,
-                      itemBuilder: (context, index) {
-                        final transaction = todayTransactions[index];
-                        // Updated: Dynamic subtitle based on transaction type
-                        String actionText = transaction.type == 'Expense'
-                            ? 'You have to pay ${transaction.title}'
-                            : 'You have to receive ${transaction.title}';
-                        return ListTile(
-                          leading: const Icon(Icons.notifications),
-                          title: Text(transaction.title),
-                          subtitle: Text(actionText),
-                          trailing: Text(transaction.date),
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content:
-                                      Text('Tapped: ${transaction.title}')),
-                            );
-                          },
-                        );
-                      },
+                return Scaffold(
+                  backgroundColor:
+                  isDarkMode ? const Color(0xFF121212) : Colors.white, // Đổi màu nền
+                  appBar: AppBar(
+                    title: Text(
+                      'Notifications',
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white : Colors.white, // Đổi màu tiêu đề
+                      ),
                     ),
+                    backgroundColor:
+                    isDarkMode ? const Color(0xFF1E1E1E) : Colors.blueAccent, // Đổi màu AppBar
+                    iconTheme: IconThemeData(
+                      color: isDarkMode ? Colors.white : Colors.white, // Đổi màu icon back
+                    ),
+                  ),
+                  body: todayTransactions.isEmpty
+                      ? EmptyNotificationsScreen(isDarkMode: isDarkMode) // Sửa tên class từ Empty.widget thành EmptyNotificationsScreen
+                      : ListView.builder(
+                    itemCount: todayTransactions.length,
+                    itemBuilder: (context, index) {
+                      final transaction = todayTransactions[index];
+                      String actionText = transaction.type == 'Expense'
+                          ? 'You have to pay ${transaction.title}'
+                          : 'You have to receive ${transaction.title}';
+                      return ListTile(
+                        leading: Icon(
+                          Icons.notifications,
+                          color: isDarkMode ? Colors.white : Colors.black87, // Đổi màu icon
+                        ),
+                        title: Text(
+                          transaction.title,
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white : Colors.black87, // Đổi màu tiêu đề
+                          ),
+                        ),
+                        subtitle: Text(
+                          actionText,
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white70 : Colors.grey, // Đổi màu phụ đề
+                          ),
+                        ),
+                        trailing: Text(
+                          transaction.date,
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white70 : Colors.grey, // Đổi màu ngày
+                          ),
+                        ),
+                        tileColor: isDarkMode
+                            ? const Color(0xFF1E1E1E)
+                            : Colors.white, // Đổi màu nền ListTile
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Tapped: ${transaction.title}',
+                                style: TextStyle(
+                                  color: isDarkMode ? Colors.white : Colors.white, // Đổi màu văn bản SnackBar
+                                ),
+                              ),
+                              backgroundColor: isDarkMode
+                                  ? Colors.grey[800]
+                                  : Colors.black, // Đổi màu nền SnackBar
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                );
+              },
             );
           },
         );
@@ -157,14 +211,15 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 }
 
-// EmptyNotificationsScreen and ErrorInfo remain unchanged
 class EmptyNotificationsScreen extends StatelessWidget {
-  const EmptyNotificationsScreen({super.key});
+  const EmptyNotificationsScreen({super.key, required this.isDarkMode});
+
+  final bool isDarkMode;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDarkMode ? const Color(0xFF121212) : Colors.white, // Đổi màu nền
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -174,17 +229,27 @@ class EmptyNotificationsScreen extends StatelessWidget {
               Icon(
                 Icons.notifications_off,
                 size: 100,
-                color: Colors.grey[400],
+                color: isDarkMode ? Colors.grey[600] : Colors.grey[400], // Đổi màu icon
               ),
               const Spacer(flex: 2),
               ErrorInfo(
                 title: "No Payment Reminders",
                 description:
-                    "You have no payments scheduled for today. We'll notify you when there are payments due.",
+                "You have no payments scheduled for today. We'll notify you when there are payments due.",
                 btnText: "Check Again",
+                isDarkMode: isDarkMode, // Truyền isDarkMode vào ErrorInfo
                 press: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Checking for updates...')),
+                    SnackBar(
+                      content: Text(
+                        'Checking for updates...',
+                        style: TextStyle(
+                          color: isDarkMode ? Colors.white : Colors.white, // Đổi màu văn bản SnackBar
+                        ),
+                      ),
+                      backgroundColor:
+                      isDarkMode ? Colors.grey[800] : Colors.black, // Đổi màu nền SnackBar
+                    ),
                   );
                 },
               ),
@@ -204,6 +269,7 @@ class ErrorInfo extends StatelessWidget {
     this.button,
     this.btnText,
     required this.press,
+    required this.isDarkMode,
   });
 
   final String title;
@@ -211,6 +277,7 @@ class ErrorInfo extends StatelessWidget {
   final Widget? button;
   final String? btnText;
   final VoidCallback press;
+  final bool isDarkMode;
 
   @override
   Widget build(BuildContext context) {
@@ -224,15 +291,19 @@ class ErrorInfo extends StatelessWidget {
           children: [
             Text(
               title,
-              style: Theme.of(context)
-                  .textTheme
-                  .headlineSmall!
-                  .copyWith(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: isDarkMode ? Colors.white : Colors.black87, // Đổi màu tiêu đề
+              ),
             ),
             const SizedBox(height: 16),
             Text(
               description,
               textAlign: TextAlign.center,
+              style: TextStyle(
+                color: isDarkMode ? Colors.white70 : Colors.black54, // Đổi màu mô tả
+              ),
             ),
             const SizedBox(height: 16 * 2.5),
             button ??
@@ -240,13 +311,20 @@ class ErrorInfo extends StatelessWidget {
                   onPressed: press,
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 48),
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
+                    backgroundColor:
+                    isDarkMode ? const Color(0xFF1E1E1E) : Colors.black, // Đổi màu nút
+                    foregroundColor:
+                    isDarkMode ? Colors.white : Colors.white, // Đổi màu văn bản/icon trên nút
                     shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(Radius.circular(8)),
                     ),
                   ),
-                  child: Text(btnText ?? "Retry".toUpperCase()),
+                  child: Text(
+                    btnText ?? "Retry".toUpperCase(),
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white : Colors.white, // Đổi màu văn bản
+                    ),
+                  ),
                 ),
             const SizedBox(height: 16),
           ],

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
+import '../provider/ThemeProvider.dart';
 
 class SpendingPlanScreen extends StatefulWidget {
   const SpendingPlanScreen({super.key});
@@ -138,37 +141,38 @@ class _SpendingPlanScreenState extends State<SpendingPlanScreen> {
     }
   }
 
- Future<List<QueryDocumentSnapshot>> getFilteredTransactionsByTarget(
-  bool isTargetMet,
-) async {
-  final user = _auth.currentUser;
-  if (user == null) return [];
-  print(isTargetMet);
+  Future<List<QueryDocumentSnapshot>> getFilteredTransactionsByTarget(
+    bool isTargetMet,
+  ) async {
+    final user = _auth.currentUser;
+    if (user == null) return [];
+    print(isTargetMet);
 
-  try {
-    final snapshot = await _firestore
-        .collection('users')
-        .doc(user.uid)
-        .collection('dailyReports')
-        .get();
+    try {
+      final snapshot =
+          await _firestore
+              .collection('users')
+              .doc(user.uid)
+              .collection('dailyReports')
+              .get();
 
-    // Lọc giao dịch theo điều kiện isTargetMet
-    final filteredDocs = snapshot.docs.where((doc) {
-      if (isTargetMet) {
-        return doc['isTargetMet'] == true;
-      } else {
-        return doc['isTargetMet'] == false;
-      }
-    }).toList();
+      // Lọc giao dịch theo điều kiện isTargetMet
+      final filteredDocs =
+          snapshot.docs.where((doc) {
+            if (isTargetMet) {
+              return doc['isTargetMet'] == true;
+            } else {
+              return doc['isTargetMet'] == false;
+            }
+          }).toList();
 
-    print("Giao dịch lọc: ${filteredDocs.length}");
-    return filteredDocs;
-  } catch (e) {
-    print("Lỗi khi lọc giao dịch theo isTargetMet: $e");
-    return [];
+      print("Giao dịch lọc: ${filteredDocs.length}");
+      return filteredDocs;
+    } catch (e) {
+      print("Lỗi khi lọc giao dịch theo isTargetMet: $e");
+      return [];
+    }
   }
-}
-
 
   Future<void> saveDailyReport(String userId) async {
     try {
@@ -280,85 +284,99 @@ class _SpendingPlanScreenState extends State<SpendingPlanScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isOver = totalSpent > dailyTarget;
-    final formattedDate = DateFormat('dd/MM/yyyy').format(today);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Kế hoạch chi tiêu"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.flag),
-            tooltip: "Đặt mục tiêu",
-            onPressed: showTargetDialog,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final isDarkMode = themeProvider.isDarkMode;
+        final isOver = totalSpent > dailyTarget;
+        final formattedDate = DateFormat('dd/MM/yyyy').format(today);
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(
+              "Kế hoạch chi tiêu",
+              style: TextStyle(
+                color:
+                    isDarkMode ? Colors.white : Colors.white, // Đổi màu tiêu đề
+              ),
+            ),
+            backgroundColor: isDarkMode ? const Color(0xFF1E1E1E) : Colors.blueAccent, // Đổi màu AppBar
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.flag),
+                tooltip: "Đặt mục tiêu",
+                onPressed: showTargetDialog,
+                color: isDarkMode ? Colors.white : Colors.white, // Đổi màu tiêu đề
+              ),
+            ],
           ),
-        ],
-      ),
-      body:
-          isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Hôm nay: $formattedDate",
-                      style: const TextStyle(fontSize: 18),
-                    ),
-                    const SizedBox(height: 16),
-                    Card(
-                      color: isOver ? Colors.red[100] : Colors.green[100],
-                      child: ListTile(
-                        title: Text(
-                          "Đã chi: ${totalSpent.toStringAsFixed(0)}₫",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: isOver ? Colors.red : Colors.green,
-                          ),
-                        ),
-                        subtitle: Text(
-                          "Mục tiêu: ${dailyTarget.toStringAsFixed(0)}₫",
-                        ),
-                        trailing:
-                            isOver
-                                ? const Icon(Icons.warning, color: Colors.red)
-                                : const Icon(
-                                  Icons.check_circle,
-                                  color: Colors.green,
-                                ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          body:
+              isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ElevatedButton(
-                          onPressed: () => showTargetFilteredTransactions(true),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                          ),
-                          child: const Text(
-                            "Trong mục tiêu",
-                            style: TextStyle(color: Colors.white),
+                        Text(
+                          "Hôm nay: $formattedDate",
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                        const SizedBox(height: 16),
+                        Card(
+                          color: isOver ? Colors.red[100] : Colors.green[100],
+                          child: ListTile(
+                            title: Text(
+                              "Đã chi: ${totalSpent.toStringAsFixed(0)}₫",
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: isOver ? Colors.red : Colors.green,
+                              ),
+                            ),
+                            subtitle: Text(
+                              "Mục tiêu: ${dailyTarget.toStringAsFixed(0)}₫",
+                              style: TextStyle(color: Colors.green),
+                            ),
+                            trailing:
+                                isOver
+                                    ? const Icon(Icons.warning, color: Colors.red)
+                                    : const Icon(
+                                      Icons.check_circle,
+                                      color: Colors.green,
+                                    ),
                           ),
                         ),
-                        ElevatedButton(
-                          onPressed: () => showTargetFilteredTransactions(false),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                          ),
-                          child: const Text(
-                            "Vượt mục tiêu",
-                            style: TextStyle(color: Colors.white),
-                          ),
+                        const SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () => showTargetFilteredTransactions(true),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                              ),
+                              child: const Text(
+                                "Trong mục tiêu",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed:
+                                  () => showTargetFilteredTransactions(false),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                              ),
+                              child: const Text(
+                                "Vượt mục tiêu",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
+        );
+      }
     );
   }
 }
@@ -388,42 +406,47 @@ class FilteredTransactionsScreen extends StatelessWidget {
       body: ListView.builder(
         itemCount: transactions.length,
         itemBuilder: (context, index) {
-          final isOver = transactions[index]['totalSpent'] < transactions[index]['target'];
-              final transaction = transactions[index].data() as Map<String, dynamic>; // Chuyển đổi về kiểu Map<String, dynamic>
+          final isOver =
+              transactions[index]['totalSpent'] < transactions[index]['target'];
+          final transaction =
+              transactions[index].data()
+                  as Map<
+                    String,
+                    dynamic
+                  >; // Chuyển đổi về kiểu Map<String, dynamic>
 
           print(transaction);
-          return  Card(
-                      color: isOver ? Colors.green[100] : Colors.red[100],
-                      child: ListTile(
-                        title: Text(
-                          "Đã chi: ${transaction['totalSpent'].toStringAsFixed(0)}₫",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: isOver ? Colors.red : Colors.green,
-                          ),
-                        ),
-                        subtitle: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-                         Text(
-                          "Mục tiêu: ${transaction['target'].toStringAsFixed(0)}₫",
-                        ),Text(
-          "Ngày: ${DateFormat('dd/MM/yyyy').format((transaction['date'] as Timestamp).toDate())}",
-          style: TextStyle(color: Colors.grey[700]),
-        ),]),
-                        trailing:
-                            isOver
-                                ? const Icon(Icons.warning, color: Colors.red)
-                                : const Icon(
-                                  Icons.check_circle,
-                                  color: Colors.green,
-                                ),
-                      ),
-                    );
+          return Card(
+            color: isOver ? Colors.green[100] : Colors.red[100],
+            child: ListTile(
+              title: Text(
+                "Đã chi: ${transaction['totalSpent'].toStringAsFixed(0)}₫",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: isOver ? Colors.red : Colors.green,
+                ),
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Mục tiêu: ${transaction['target'].toStringAsFixed(0)}₫",
+                  ),
+                  Text(
+                    "Ngày: ${DateFormat('dd/MM/yyyy').format((transaction['date'] as Timestamp).toDate())}",
+                    style: TextStyle(color: Colors.grey[700]),
+                  ),
+                ],
+              ),
+              trailing:
+                  isOver
+                      ? const Icon(Icons.warning, color: Colors.red)
+                      : const Icon(Icons.check_circle, color: Colors.green),
+            ),
+          );
         },
       ),
     );
   }
 }
-

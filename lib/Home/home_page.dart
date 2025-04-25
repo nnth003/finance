@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../provider/ThemeProvider.dart';
 import '../provider/transactionProvider.dart';
-import 'notification_page.dart'; // Ensure this file exists
+import 'notification_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../auth/login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -17,10 +18,9 @@ class DashboardScreen extends StatefulWidget {
 class DashboardScreenState extends State<DashboardScreen> {
   final currencyFormat = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
 
-  // Helper method to group transactions by date
   Map<String, List<Map<String, dynamic>>> _groupTransactionsByDate(
-    List<Map<String, dynamic>> transactions,
-  ) {
+      List<Map<String, dynamic>> transactions,
+      ) {
     final Map<String, List<Map<String, dynamic>>> grouped = {};
     final now = DateTime.now();
 
@@ -49,10 +49,9 @@ class DashboardScreenState extends State<DashboardScreen> {
     return grouped;
   }
 
-  // Calculate total balance, income, and expenses
   Map<String, double> calculateBalances(
-    List<Map<String, dynamic>> transactions,
-  ) {
+      List<Map<String, dynamic>> transactions,
+      ) {
     double totalBalance = 0;
     double income = 0;
     double expenses = 0;
@@ -78,19 +77,18 @@ class DashboardScreenState extends State<DashboardScreen> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       try {
-        final doc =
-            await FirebaseFirestore.instance
-                .collection('user_info')
-                .doc(user.uid)
-                .get();
+        final doc = await FirebaseFirestore.instance
+            .collection('user_info')
+            .doc(user.uid)
+            .get();
         if (doc.exists) {
-          return doc['first_name'] ?? 'User'; // Fallback to 'User' if not found
+          return doc['first_name'] ?? 'User';
         }
       } catch (e) {
         debugPrint("Error fetching user name: $e");
       }
     }
-    return 'User'; // Fallback if no user or error
+    return 'User';
   }
 
   @override
@@ -115,212 +113,210 @@ class DashboardScreenState extends State<DashboardScreen> {
             final balances = calculateBalances(transactions);
             final transactionsByDate = _groupTransactionsByDate(transactions);
 
-            return Scaffold(
-              backgroundColor: Colors.white,
-              appBar: AppBar(
-                backgroundColor: Colors.white,
-                elevation: 0,
-                title: FutureBuilder<String>(
-                  future: _getUserFirstName(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Row(
-                        children: [
-                          CircleAvatar(
-                            backgroundImage: NetworkImage(
-                              "https://i.pravatar.cc/150?img=3",
-                            ),
-                          ),
-                          SizedBox(width: 10),
-                          Text(
-                            "Loading...",
-                            style: TextStyle(
-                              color: Colors.blue,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      );
-                    }
-                    final userName = snapshot.data ?? 'User';
-                    return Row(
-                      children: [
-                        const CircleAvatar(
-                          backgroundImage: NetworkImage(
-                            "https://i.pravatar.cc/150?img=3",
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          "Hey, $userName!",
-                          style: const TextStyle(
-                            color: Colors.blue,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-                actions: [
-                  IconButton(
-                    icon: Stack(
-                      children: [
-                        const Icon(
-                          Icons.notifications, // Normal notification icon
-                          color: Color.fromARGB(255, 73, 176, 205),
-                          size: 37,
-                        ),
-                        Positioned(
-                          right: 6,
-                          top: 7,
-                          child: Container(
-                            width: 10,
-                            height: 10,
-                            decoration: const BoxDecoration(
-                              color: Colors.red,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const NotificationsPage(),
-                        ),
-                      );
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.exit_to_app),
-                    onPressed: () async {
-                      // Sign out from Firebase
-                      await FirebaseAuth.instance.signOut();
-
-                      // Navigate to the login screen immediately after sign-out
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LoginPage(),
-                        ), // Replace with your SignInPage widget
-                      );
-                    },
-                  ),
-                ],
-              ),
-              body: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 10),
-                    Text(
-                      currencyFormat.format(balances['totalBalance']),
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue,
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    const Text(
-                      "Total Balance",
-                      style: TextStyle(fontSize: 16, color: Colors.black54),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildBalanceCard(
-                          "Income",
-                          balances['income']!,
-
-                          Icons.arrow_upward,
-                          const Color.fromARGB(255, 6, 210, 111),
-                        ),
-                        _buildBalanceCard(
-                          "Expense",
-                          balances['expenses']!,
-                          Icons.arrow_downward,
-                          Colors.redAccent,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Recent Transactions",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Color.fromARGB(255, 82, 80, 80),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Expanded(
-                      child:
-                          transactions.isEmpty
-                              ? const Center(
-                                child: Text(
-                                  "No transactions yet.",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.grey,
-                                  ),
+            return Consumer<ThemeProvider>(
+              builder: (context, themeProvider, child) {
+                final isDarkMode = themeProvider.isDarkMode;
+                return Scaffold(
+                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                  appBar: AppBar(
+                    backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+                    elevation: 0,
+                    title: FutureBuilder<String>(
+                      future: _getUserFirstName(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Row(
+                            children: [
+                              CircleAvatar(
+                                backgroundImage: NetworkImage(
+                                  "https://i.pravatar.cc/150?img=3",
                                 ),
-                              )
-                              : ListView(
-                                padding: const EdgeInsets.only(top: 5),
-                                children:
-                                    transactionsByDate.entries.map((entry) {
-                                      return Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            entry.key,
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          
-
-                                          const SizedBox(height: 5),
-                                          ...entry.value.map(
-                                            (
-                                              transaction,
-                                              
-                                            ) => _buildTransactionCard(
-                                              transaction["title"],
-                                              transaction["description"] ??
-                                                  "${transaction['type']} - ${transaction['category'] ?? 'Uncategorized'}",
-                                              transaction["amount"],
-                                              _getIconForCategory(
-                                                transaction["category"], 
-                                              ),
-                                              _getColorForType(
-                                                transaction["type"],
-                                              ),
-                                              transaction["date"],
-                                            ),
-                                          ),
-                                          const SizedBox(height: 10),
-                                        ],
-                                      );
-                                    }).toList(),
                               ),
+                              SizedBox(width: 10),
+                              Text(
+                                "Loading...",
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          );
+                        }
+                        final userName = snapshot.data ?? 'User';
+                        return Row(
+                          children: [
+                            const CircleAvatar(
+                              backgroundImage: NetworkImage(
+                                "https://i.pravatar.cc/150?img=3",
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              "Hey, $userName!",
+                              style: TextStyle(
+                                color: Colors.blue,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
-                  ],
-                ),
-              ),
+                    actions: [
+                      IconButton(
+                        icon: Stack(
+                          children: [
+                            Icon(
+                              Icons.notifications,
+                              color: const Color.fromARGB(255, 73, 176, 205),
+                              size: 37,
+                            ),
+                            Positioned(
+                              right: 6,
+                              top: 7,
+                              child: Container(
+                                width: 10,
+                                height: 10,
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const NotificationsPage(),
+                            ),
+                          );
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.exit_to_app),
+                        onPressed: () async {
+                          await FirebaseAuth.instance.signOut();
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginPage(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  body: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 10),
+                        Text(
+                          currencyFormat.format(balances['totalBalance']),
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          "Total Balance",
+                          style: TextStyle(
+                            fontSize: 16,
+                            // Đổi màu chữ thành trắng trong chế độ tối để phù hợp với nền tối
+                            color: isDarkMode ? Colors.white : Colors.black54,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _buildBalanceCard(
+                              "Income",
+                              balances['income']!,
+                              Icons.arrow_upward,
+                              const Color.fromARGB(255, 6, 210, 111),
+                            ),
+                            _buildBalanceCard(
+                              "Expense",
+                              balances['expenses']!,
+                              Icons.arrow_downward,
+                              Colors.redAccent,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Recent Transactions",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              // Đổi màu chữ thành trắng trong chế độ tối để phù hợp với nền tối
+                              color: isDarkMode ? Colors.white : const Color.fromARGB(255, 82, 80, 80),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Expanded(
+                          child: transactions.isEmpty
+                              ? Center(
+                            child: Text(
+                              "No transactions yet.",
+                              style: TextStyle(
+                                fontSize: 16,
+                                // Đổi màu chữ thành trắng trong chế độ tối để phù hợp với nền tối
+                                color: isDarkMode ? Colors.white : Colors.grey,
+                              ),
+                            ),
+                          )
+                              : ListView(
+                            padding: const EdgeInsets.only(top: 5),
+                            children: transactionsByDate.entries.map((entry) {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    entry.key,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      // Đổi màu chữ thành trắng trong chế độ tối để phù hợp với nền tối
+                                      color: isDarkMode ? Colors.white : Colors.black,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 5),
+                                  ...entry.value.map(
+                                        (transaction) => _buildTransactionCard(
+                                      transaction["title"],
+                                      transaction["description"] ??
+                                          "${transaction['type']} - ${transaction['category'] ?? 'Uncategorized'}",
+                                      transaction["amount"],
+                                      _getIconForCategory(transaction["category"]),
+                                      _getColorForType(transaction["type"]),
+                                      transaction["date"],
+                                      isDarkMode,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                ],
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             );
           },
         );
@@ -329,74 +325,83 @@ class DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildBalanceCard(
-    String title,
-    double amount,
-    IconData icon,
-    Color color,
-  ) {
-    return Expanded(
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 5),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(15),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 6,
-              offset: Offset(2, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(fontSize: 14, color: Colors.white),
-                ),
-                const SizedBox(height: 7),
-                Text(
-                  NumberFormat.currency(
-                    locale: 'vi_VN',
-                    symbol: '₫',
-                  ).format(amount),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+      String title,
+      double amount,
+      IconData icon,
+      Color color,
+      ) {
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final isDarkMode = themeProvider.isDarkMode;
+        return Expanded(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 5),
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(15),
+              boxShadow: [
+                BoxShadow(
+                  color: isDarkMode ? Colors.white12 : Colors.black12,
+                  blurRadius: 6,
+                  offset: const Offset(2, 2),
                 ),
               ],
             ),
-         
-            Icon(icon, color: Colors.white, size: 30),
-          ],
-        ),
-      ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(fontSize: 14, color: Colors.white),
+                    ),
+                    const SizedBox(height: 7),
+                    Text(
+                      NumberFormat.currency(
+                        locale: 'vi_VN',
+                        symbol: '₫',
+                      ).format(amount),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                Icon(icon, color: Colors.white, size: 30),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildTransactionCard(
-    String title,
-    String desc,
-    double amount,
-    IconData icon,
-    Color iconColor,
-    String date,
-  ) {
+      String title,
+      String desc,
+      double amount,
+      IconData icon,
+      Color iconColor,
+      String date,
+      bool isDarkMode,
+      ) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(2, 2)),
+        boxShadow: [
+          BoxShadow(
+            color: isDarkMode ? Colors.white12 : Colors.black12,
+            blurRadius: 6,
+            offset: const Offset(2, 2),
+          ),
         ],
       ),
       child: Row(
@@ -405,9 +410,8 @@ class DashboardScreenState extends State<DashboardScreen> {
           Row(
             children: [
               CircleAvatar(
-                backgroundColor:  iconColor.withOpacity(0.2), // Adjust opacity for better visibility
-                radius: 20, 
-                // child: Icon(icon., color: iconColor),
+                backgroundColor: iconColor.withOpacity(0.2),
+                radius: 20,
                 child: Icon(icon, color: iconColor),
               ),
               const SizedBox(width: 12),
@@ -416,14 +420,20 @@ class DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
+                      // Đổi màu chữ thành trắng trong chế độ tối để phù hợp với nền tối
+                      color: isDarkMode ? Colors.white : Colors.black,
                     ),
                   ),
                   Text(
                     desc,
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    style: TextStyle(
+                      fontSize: 12,
+                      // Đổi màu chữ thành trắng nhạt trong chế độ tối để phù hợp với nền tối
+                      color: isDarkMode ? Colors.white70 : Colors.grey,
+                    ),
                   ),
                 ],
               ),
@@ -445,7 +455,11 @@ class DashboardScreenState extends State<DashboardScreen> {
               ),
               Text(
                 date,
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                style: TextStyle(
+                  fontSize: 12,
+                  // Đổi màu chữ thành trắng nhạt trong chế độ tối để phù hợp với nền tối
+                  color: isDarkMode ? Colors.white70 : Colors.grey,
+                ),
               ),
             ],
           ),
@@ -454,37 +468,34 @@ class DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-IconData _getIconForCategory(String? category) {
-  switch (category ?? 'Uncategorized') {
-    case 'Shopping':
-      return Icons.shopping_cart;
-    case 'Food':
-      return Icons.fastfood;
-    case 'Transport':
-      return Icons.directions_car;
-    case 'Health':
-      return Icons.healing;
-    case 'Entertainment':
-      return Icons.movie;
-    case 'Bills':
-      return Icons.receipt;
-    case 'Education':
-      return Icons.school;
-    case 'Salary':
-      return Icons.attach_money;
-    case 'Gift':
-      return Icons.card_giftcard;
-    case 'Investment':
-      return Icons.trending_up;
-    case 'Travel':
-      return Icons.flight;
-    default:
-      return Icons.category;
+  IconData _getIconForCategory(String? category) {
+    switch (category ?? 'Uncategorized') {
+      case 'Shopping':
+        return Icons.shopping_cart;
+      case 'Food':
+        return Icons.fastfood;
+      case 'Transport':
+        return Icons.directions_car;
+      case 'Health':
+        return Icons.healing;
+      case 'Entertainment':
+        return Icons.movie;
+      case 'Bills':
+        return Icons.receipt;
+      case 'Education':
+        return Icons.school;
+      case 'Salary':
+        return Icons.attach_money;
+      case 'Gift':
+        return Icons.card_giftcard;
+      case 'Investment':
+        return Icons.trending_up;
+      case 'Travel':
+        return Icons.flight;
+      default:
+        return Icons.category;
+    }
   }
-}
-
-
-
 
   Color _getColorForType(String? type) {
     switch (type ?? 'Uncategorized') {
@@ -493,7 +504,7 @@ IconData _getIconForCategory(String? category) {
       case 'Expense':
         return Colors.red;
       default:
-        return Colors.grey; // Neutral fallback color
+        return Colors.grey;
     }
   }
 }

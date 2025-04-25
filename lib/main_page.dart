@@ -4,6 +4,7 @@ import 'package:finance/Home/home_page.dart';
 import 'package:finance/accounts/account_page.dart';
 import 'package:finance/category/category_page.dart';
 import 'package:finance/plan/plan_page.dart';
+import 'package:finance/provider/ThemeProvider.dart';
 import 'package:finance/provider/transactionProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
@@ -15,7 +16,7 @@ class MainPage extends StatefulWidget {
   @override
   _MainPageState createState() => _MainPageState();
 }
- 
+
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
   bool isPremiumUnlocked = false; // Giả lập trạng thái đã thanh toán
@@ -56,101 +57,92 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     final transactionProvider =
-        Provider.of<TransactionProvider>(context, listen: false);
+    Provider.of<TransactionProvider>(context, listen: false);
 
     final List<Widget> _pages = [
       DashboardScreen(),
       AnalyticsPage(),
       const CategoryManagementPage(),
-          ChatScreen(),
-                SpendingPlanScreen(),
-
-      /// ChatScreen có lớp mờ khi chưa thanh toán
-      // Stack(
-      //   children: [
-      //     if (!isPremiumUnlocked)
-
-      //       Container(
-      //         color: Colors.black.withOpacity(0.6),
-      //         child: Center(
-      //           child: ElevatedButton(
-      //             onPressed: _showPaymentDialog,
-      //             child: const Text("Mở khóa tính năng"),
-      //           ),
-      //         ),
-      //       ),
-      //   ],
-      // ),
-
+      ChatScreen(),
+      SpendingPlanScreen(),
       AccountPage(),
     ];
 
-    return Scaffold(
-      body: _pages[_selectedIndex],
-      bottomNavigationBar: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.center,
-        children: [
-          Container(
-            height: 70,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 8,
-                  offset: Offset(0, -2),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final isDarkMode = themeProvider.isDarkMode;
+        return Scaffold(
+          body: _pages[_selectedIndex],
+          bottomNavigationBar: Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
+            children: [
+              Container(
+                height: 70,
+                decoration: BoxDecoration(
+                  color: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white, // Đổi màu nền cho chế độ tối
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDarkMode ? Colors.black54 : Colors.black12, // Đổi màu bóng
+                      blurRadius: 8,
+                      offset: const Offset(0, -2),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-              child: GNav(
-                gap: 8,
-                backgroundColor: Colors.white,
-                color: const Color.fromARGB(255, 12, 154, 236),
-                activeColor: Colors.white,
-                tabBackgroundColor: Colors.grey[800]!,
-                padding: const EdgeInsets.all(10),
-                onTabChange: _onItemTapped,
-                tabs: const [
-                  GButton(icon: Icons.home, text: 'Home'),
-                  GButton(icon: Icons.analytics, text: 'Analytics'),
-                  GButton(icon: Icons.category, text: 'Categories'),
-                  GButton(icon: Icons.adb, text: 'Chat Ai'),
-                  GButton(icon: Icons.text_snippet, text: 'Plan'),
-                  GButton(icon: Icons.person, text: 'Accounts'),
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 50,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.blue,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                  child: GNav(
+                    gap: 8,
+                    backgroundColor: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white, // Đổi màu nền GNav
+                    color: isDarkMode ? Colors.white70 : const Color.fromARGB(255, 12, 154, 236), // Đổi màu icon khi không được chọn
+                    activeColor: Colors.white, // Màu icon khi được chọn (giữ nguyên trắng)
+                    tabBackgroundColor: isDarkMode ? Colors.grey[700]! : Colors.grey[800]!, // Đổi màu nền của tab được chọn
+                    padding: const EdgeInsets.all(10),
+                    onTabChange: _onItemTapped,
+                    textStyle: TextStyle(
+                      fontSize: 12,
+                      color: isDarkMode ? Colors.white : Colors.white, // Đổi màu văn bản của tab
+                    ),
+                    tabs: const [
+                      GButton(icon: Icons.home, text: 'Home'),
+                      GButton(icon: Icons.analytics, text: 'Analytics'),
+                      GButton(icon: Icons.category, text: 'Categories'),
+                      GButton(icon: Icons.adb, text: 'Chat Ai'),
+                      GButton(icon: Icons.text_snippet, text: 'Plan'),
+                      GButton(icon: Icons.person, text: 'Accounts'),
+                    ],
                   ),
-                ],
+                ),
               ),
-              child: FloatingActionButton(
-                onPressed: () {
-                  transactionProvider.showTransactionDialog(context);
-                },
-                backgroundColor: Colors.blue,
-                elevation: 0,
-                shape: const CircleBorder(),
-                child: const Icon(Icons.add, size: 32, color: Colors.white),
+              Positioned(
+                bottom: 50,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: FloatingActionButton(
+                    onPressed: () {
+                      transactionProvider.showTransactionDialog(context);
+                    },
+                    backgroundColor: Colors.blue,
+                    elevation: 0,
+                    shape: const CircleBorder(),
+                    child: const Icon(Icons.add, size: 32, color: Colors.white),
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
