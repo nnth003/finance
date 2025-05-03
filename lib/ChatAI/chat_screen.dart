@@ -21,20 +21,78 @@ class _ChatScreenState extends State<ChatScreen> {
   final List<Map<String, String>> _messages = [];
   final GeminiService _gemini = GeminiService();
 
+  // Danh sách từ khóa liên quan đến tài chính
+  static const List<String> _financeKeywords = [
+    'tài chính', 'tiền', 'chi tiêu', 'thu nhập', 'tiết kiệm', 'đầu tư',
+    'ngân sách', 'giao dịch', 'số dư', 'khoản vay', 'lãi suất', 'tài khoản',
+    'chi phí', 'lợi nhuận', 'thua lỗ', 'quản lý', 'kế hoạch', 'danh mục',
+    'thuế', 'tín dụng', 'nợ', 'tài sản', 'cổ phiếu', 'trái phiếu', 'quỹ'
+  ];
+
+  // Danh sách gợi ý câu hỏi tài chính
+  static const List<String> _suggestedQuestions = [
+    'Làm thế nào để tiết kiệm 20% thu nhập mỗi tháng?',
+    'Gợi ý kế hoạch quản lý chi tiêu hàng tuần.',
+    'Phân tích chi tiêu tháng này và đề xuất cải thiện.',
+    'Đầu tư vào cổ phiếu có rủi ro gì?',
+    'Cách lập ngân sách cho người mới bắt đầu?',
+    'Lãi suất vay ngân hàng hiện nay là bao nhiêu?'
+  ];
+
+  // Hàm loại bỏ dấu tiếng Việt
+  String _removeDiacritics(String input) {
+    const String withDiacritics = 'àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ';
+    const String withoutDiacritics = 'aaaaaăaaaaaâaaaaaeeeeeêeeeeeiiiiioooooôoooooơoooooouuuuuưuuuuuyyyyyd';
+
+    String result = input.toLowerCase();
+    for (int i = 0; i < withDiacritics.length; i++) {
+      result = result.replaceAll(withDiacritics[i], withoutDiacritics[i]);
+    }
+    return result;
+  }
+
+  // Hàm kiểm tra xem prompt có liên quan đến tài chính không
+  bool _isFinanceRelated(String input) {
+    final normalizedInput = _removeDiacritics(input.toLowerCase());
+    return _financeKeywords.any((keyword) {
+      final normalizedKeyword = _removeDiacritics(keyword.toLowerCase());
+      return normalizedInput.contains(normalizedKeyword);
+    });
+  }
+
   void _sendMessage() async {
     final input = _controller.text.trim();
     if (input.isEmpty) return;
+
+    // Kiểm tra xem prompt có liên quan đến tài chính không
+    if (!_isFinanceRelated(input)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng chỉ đặt câu hỏi liên quan đến tài chính!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
 
     setState(() {
       _messages.add({"role": "user", "content": input});
       _controller.clear();
     });
 
-    final reply = await _gemini.sendMessage(input);
-
-    setState(() {
-      _messages.add({"role": "ai", "content": reply});
-    });
+    try {
+      final reply = await _gemini.sendMessage(input);
+      setState(() {
+        _messages.add({"role": "ai", "content": reply});
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi AI: $e')),
+      );
+      setState(() {
+        _messages.add({"role": "ai", "content": "Không thể nhận phản hồi từ AI. Vui lòng thử lại."});
+      });
+    }
   }
 
   Future<void> _handleFilter(String type) async {
@@ -102,7 +160,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
       return snapshot.docs.map((doc) => doc.data()).toList();
     } catch (e) {
-      print('Lỗi: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi khi lấy giao dịch: $e')),
+      );
       return [];
     }
   }
@@ -150,20 +210,21 @@ class _ChatScreenState extends State<ChatScreen> {
         return Scaffold(
           appBar: AppBar(
             title: const Text('AI Chat Tài Chính'),
-            backgroundColor: isDarkMode ? const Color(0xFF1E1E1E) : Colors.blueAccent, // Đổi màu AppBar
+            backgroundColor: isDarkMode ? const Color(0xFF1E1E1E) : Colors.blueAccent,
             titleTextStyle: TextStyle(
-              color: isDarkMode ? Colors.white : Colors.white, // Đổi màu tiêu đề
+              color: isDarkMode ? Colors.white : Colors.white,
               fontSize: 20,
               fontWeight: FontWeight.w600,
             ),
             iconTheme: IconThemeData(
-              color: isDarkMode ? Colors.white : Colors.white, // Đổi màu icon back
+              color: isDarkMode ? Colors.white : Colors.white,
             ),
             centerTitle: true,
           ),
-          backgroundColor: isDarkMode ? const Color(0xFF121212) : Colors.white, // Đổi màu nền
+          backgroundColor: isDarkMode ? const Color(0xFF121212) : Colors.white,
           body: Column(
             children: [
+              // Bộ lọc thời gian
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
                 child: Row(
@@ -173,11 +234,11 @@ class _ChatScreenState extends State<ChatScreen> {
                       label: Text(
                         'Ngày',
                         style: TextStyle(
-                          color: isDarkMode ? Colors.white : Colors.black87, // Đổi màu văn bản
+                          color: isDarkMode ? Colors.white : Colors.black87,
                         ),
                       ),
-                      backgroundColor: isDarkMode ? const Color(0xFF1E1E1E) : Colors.grey[200], // Đổi màu nền
-                      selectedColor: isDarkMode ? Colors.grey[700] : Colors.blue[100], // Đổi màu khi được chọn
+                      backgroundColor: isDarkMode ? const Color(0xFF1E1E1E) : Colors.grey[200],
+                      selectedColor: isDarkMode ? Colors.grey[700] : Colors.blue[100],
                       onSelected: (_) => _handleFilter("day"),
                     ),
                     FilterChip(
@@ -216,8 +277,37 @@ class _ChatScreenState extends State<ChatScreen> {
                   ],
                 ),
               ),
+              // Gợi ý câu hỏi
+              SizedBox(
+                height: 40, // Giới hạn chiều cao
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
+                  children: _suggestedQuestions.map((question) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: ActionChip(
+                        label: Text(
+                          question,
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white : Colors.black87,
+                            fontSize: 10, // Giảm kích thước chữ
+                          ),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), // Giảm padding
+                        backgroundColor: isDarkMode ? const Color(0xFF1E1E1E) : Colors.grey[200],
+                        onPressed: () {
+                          setState(() {
+                            _controller.text = question;
+                          });
+                        },
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
               Divider(
-                color: isDarkMode ? Colors.white70 : Colors.grey, // Đổi màu Divider
+                color: isDarkMode ? Colors.white70 : Colors.grey,
               ),
               Expanded(
                 child: ListView.builder(
@@ -242,7 +332,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             if (!isUser) ...[
                               CircleAvatar(
                                 radius: 18,
-                                backgroundColor: isDarkMode ? Colors.blueGrey : Colors.blueAccent, // Đổi màu avatar
+                                backgroundColor: isDarkMode ? Colors.blueGrey : Colors.blueAccent,
                                 child: Icon(
                                   Icons.android,
                                   color: Colors.white,
@@ -260,7 +350,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             ] else if (isUser && userAvatar == null) ...[
                               CircleAvatar(
                                 radius: 18,
-                                backgroundColor: isDarkMode ? Colors.grey[700] : Colors.grey, // Đổi màu avatar
+                                backgroundColor: isDarkMode ? Colors.grey[700] : Colors.grey,
                                 child: Icon(
                                   Icons.person,
                                   color: Colors.white,
@@ -274,8 +364,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
                                   color: isUser
-                                      ? (isDarkMode ? Colors.blueGrey[700] : Colors.blue[100]) // Đổi màu tin nhắn người dùng
-                                      : (isDarkMode ? Colors.grey[800] : Colors.grey[200]), // Đổi màu tin nhắn AI
+                                      ? (isDarkMode ? Colors.blueGrey[700] : Colors.blue[100])
+                                      : (isDarkMode ? Colors.grey[800] : Colors.grey[200]),
                                   borderRadius: BorderRadius.only(
                                     topLeft: const Radius.circular(16),
                                     topRight: const Radius.circular(16),
@@ -291,15 +381,15 @@ class _ChatScreenState extends State<ChatScreen> {
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         color: isUser
-                                            ? (isDarkMode ? Colors.white : Colors.blueGrey) // Đổi màu tên người dùng
-                                            : (isDarkMode ? Colors.white : Colors.deepPurple), // Đổi màu tên AI
+                                            ? (isDarkMode ? Colors.white : Colors.blueGrey)
+                                            : (isDarkMode ? Colors.white : Colors.deepPurple),
                                       ),
                                     ),
                                     Text(
                                       message['content'] ?? '',
                                       style: TextStyle(
                                         fontSize: 16,
-                                        color: isDarkMode ? Colors.white : Colors.black87, // Đổi màu nội dung tin nhắn
+                                        color: isDarkMode ? Colors.white : Colors.black87,
                                       ),
                                     ),
                                   ],
@@ -315,7 +405,7 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
               Container(
                 padding: const EdgeInsets.all(8),
-                color: isDarkMode ? const Color(0xFF1E1E1E) : Colors.grey[100], // Đổi màu nền ô nhập liệu
+                color: isDarkMode ? const Color(0xFF1E1E1E) : Colors.grey[100],
                 child: Row(
                   children: [
                     Expanded(
@@ -323,13 +413,13 @@ class _ChatScreenState extends State<ChatScreen> {
                         controller: _controller,
                         maxLines: null,
                         decoration: InputDecoration(
-                          hintText: 'Nhập tin nhắn...',
+                          hintText: 'Nhập câu hỏi về tài chính...',
                           hintStyle: TextStyle(
-                            color: isDarkMode ? Colors.white70 : Colors.grey, // Đổi màu hint
+                            color: isDarkMode ? Colors.white70 : Colors.grey,
                           ),
                           border: OutlineInputBorder(
                             borderSide: BorderSide(
-                              color: isDarkMode ? Colors.white70 : Colors.grey, // Đổi màu viền
+                              color: isDarkMode ? Colors.white70 : Colors.grey,
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
@@ -349,14 +439,14 @@ class _ChatScreenState extends State<ChatScreen> {
                           ),
                         ),
                         style: TextStyle(
-                          color: isDarkMode ? Colors.white : Colors.black, // Đổi màu văn bản nhập vào
+                          color: isDarkMode ? Colors.white : Colors.black,
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
                     IconButton(
                       icon: const Icon(Icons.send),
-                      color: isDarkMode ? Colors.white : Colors.blue, // Đổi màu icon gửi
+                      color: isDarkMode ? Colors.white : Colors.blue,
                       onPressed: _sendMessage,
                     ),
                   ],
